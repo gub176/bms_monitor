@@ -29,21 +29,33 @@ export const useAlertStore = create<AlertState>((set) => ({
         return
       }
 
-      // 通过 user_devices 关联查询用户绑定的设备的告警
-      let query = supabase
+      // 先获取用户绑定的设备 ID 列表
+      const { data: userDevices, error: devicesError } = await supabase
         .from('user_devices')
-        .select(`
-          device_id,
-          alerts:alerts (
-            id,
-            device_id,
-            alert_type,
-            severity,
-            start_time,
-            end_time
-          )
-        `)
+        .select('device_id')
         .eq('user_id', user.id)
+
+      if (devicesError) throw devicesError
+
+      const deviceIds = userDevices.map(d => d.device_id)
+
+      if (deviceIds.length === 0) {
+        set({ alerts: [], activeAlerts: [], loading: false, error: null })
+        return
+      }
+
+      // 查询这些设备的告警
+      let query = supabase
+        .from('alerts')
+        .select(`
+          id,
+          device_id,
+          alert_type,
+          severity,
+          start_time,
+          end_time
+        `)
+        .in('device_id', deviceIds)
 
       if (deviceId) {
         query = query.eq('device_id', deviceId)
@@ -53,8 +65,7 @@ export const useAlertStore = create<AlertState>((set) => ({
 
       if (error) throw error
 
-      // 扁平化告警数据
-      const allAlerts = (data || []).flatMap(item => item.alerts || [])
+      const allAlerts = data || []
       const activeAlerts = allAlerts.filter((a) => a.end_time === null)
 
       set({
