@@ -52,13 +52,38 @@ export const useDeviceStore = create<DeviceState>((set, get) => ({
   fetchDevices: async () => {
     set({ loading: true, error: null })
     try {
+      // 通过 user_devices 关联查询用户绑定的设备
       const { data, error } = await supabase
-        .from('devices')
-        .select('*')
-        .order('last_online', { ascending: false })
+        .from('user_devices')
+        .select(`
+          device_id,
+          role,
+          devices:device_id (
+            device_id,
+            auth_key,
+            manufacturer,
+            hw_version,
+            fw_version,
+            battery_packs_count,
+            cell_count,
+            temp_sensor_count,
+            last_online,
+            last_offline,
+            status,
+            created_at,
+            updated_at
+          )
+        `)
+        .order('created_at', { ascending: false })
 
       if (error) throw error
-      set({ devices: data || [], loading: false, error: null })
+
+      // 提取 devices 数据
+      const devicesList = (data || [])
+        .filter(item => item.devices)
+        .map(item => item.devices)
+
+      set({ devices: devicesList, loading: false, error: null })
     } catch (err) {
       console.error('Failed to fetch devices:', err)
       set({

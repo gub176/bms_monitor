@@ -22,10 +22,28 @@ export const useAlertStore = create<AlertState>((set, get) => ({
   fetchAlerts: async (deviceId) => {
     set({ loading: true, error: null })
     try {
+      // 获取当前用户
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        set({ loading: false, error: '请先登录' })
+        return
+      }
+
+      // 通过 user_devices 关联查询用户绑定的设备的告警
       let query = supabase
-        .from('alerts')
-        .select('*')
-        .order('start_time', { ascending: false })
+        .from('user_devices')
+        .select(`
+          device_id,
+          alerts:alerts (
+            id,
+            device_id,
+            alert_type,
+            severity,
+            start_time,
+            end_time
+          )
+        `)
+        .eq('user_id', user.id)
 
       if (deviceId) {
         query = query.eq('device_id', deviceId)
@@ -35,9 +53,12 @@ export const useAlertStore = create<AlertState>((set, get) => ({
 
       if (error) throw error
 
-      const activeAlerts = data?.filter((a) => a.end_time === null) || []
+      // 扁平化告警数据
+      const allAlerts = (data || []).flatMap(item => item.alerts || [])
+      const activeAlerts = allAlerts.filter((a) => a.end_time === null)
+
       set({
-        alerts: data || [],
+        alerts: allAlerts,
         activeAlerts,
         loading: false,
         error: null,
