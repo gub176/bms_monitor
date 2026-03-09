@@ -39,7 +39,7 @@ const DeviceCard: React.FC<DeviceCardProps> = ({
         <div className="flex items-center gap-2">
           <ThunderboltOutlined className="text-blue-500 text-lg" />
           <Text strong className="text-base">
-            {device.name || device.device_id}
+            {device.device_id}
           </Text>
         </div>
         {isOnline ? (
@@ -65,16 +65,16 @@ const DeviceCard: React.FC<DeviceCardProps> = ({
           )}
         </div>
 
-        {(device.manufacturer || device.firmware_version) && (
+        {(device.manufacturer || device.fw_version) && (
           <div className="flex flex-wrap gap-1">
             {device.manufacturer && (
               <Tag color="blue" className="text-xs">
                 {device.manufacturer}
               </Tag>
             )}
-            {device.firmware_version && (
+            {device.fw_version && (
               <Tag color="green" className="text-xs">
-                v{device.firmware_version}
+                v{device.fw_version}
               </Tag>
             )}
           </div>
@@ -82,14 +82,14 @@ const DeviceCard: React.FC<DeviceCardProps> = ({
 
         <div className="flex items-center justify-between pt-2 border-t border-gray-100">
           <Space size="small">
-            {device.rated_capacity && (
+            {device.cell_count && (
               <Text type="secondary" className="text-xs">
-                {device.rated_capacity}Wh
+                {device.cell_count} 串
               </Text>
             )}
-            {device.rated_voltage && (
+            {device.battery_packs_count && (
               <Text type="secondary" className="text-xs">
-                {device.rated_voltage}V
+                {device.battery_packs_count} 包
               </Text>
             )}
           </Space>

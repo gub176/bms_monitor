@@ -458,10 +458,10 @@ const DeviceDetail: React.FC = () => {
               <Col span={12}>
                 <div className="text-center p-4 rounded-lg bg-gray-50">
                   <Text type="secondary" className="text-xs block mb-2">
-                    额定容量
+                    电池包数量
                   </Text>
                   <Text strong className="text-2xl text-gray-700">
-                    {device.rated_capacity || 100} Ah
+                    {device.battery_packs_count || 1} 个
                   </Text>
                 </div>
               </Col>

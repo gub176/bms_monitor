@@ -19,13 +19,9 @@ export interface Device {
   manufacturer: string | null
   hw_version: string | null
   fw_version: string | null
-  name: string | null
-  firmware_version: string | null
   battery_packs_count: number | null
   cell_count: number | null
   temp_sensor_count: number | null
-  rated_capacity: number | null
-  rated_voltage: number | null
   last_online: string | null
   last_offline: string | null
   status: 'online' | 'offline' | null
