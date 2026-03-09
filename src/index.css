@@ -1,11 +1,237 @@
+@import "tailwindcss";
+
+/* =========================================
+   CSS 变量设计系统 - BMS Monitor Enterprise
+   ========================================= */
+:root {
+  /* 主色调 - 科技蓝 */
+  --color-primary: #1890ff;
+  --color-primary-hover: #40a9ff;
+  --color-primary-active: #096dd9;
+  --color-primary-light: #e6f7ff;
+
+  /* 功能色 */
+  --color-success: #52c41a;
+  --color-warning: #faad14;
+  --color-error: #ff4d4f;
+  --color-info: #1890ff;
+
+  /* 中性色 */
+  --color-text-primary: #262626;
+  --color-text-secondary: #595959;
+  --color-text-tertiary: #8c8c8c;
+  --color-text-disabled: #bfbfbf;
+
+  /* 背景色 */
+  --color-bg-page: #f5f5f5;
+  --color-bg-card: #ffffff;
+  --color-bg-container: #ffffff;
+
+  /* 边框色 */
+  --color-border: #f0f0f0;
+  --color-border-secondary: #d9d9d9;
+
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 2px 4px 0 rgba(0, 0, 0, 0.06), 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 4px 12px 0 rgba(0, 0, 0, 0.08), 0 8px 24px 0 rgba(0, 0, 0, 0.12);
+
+  /* 圆角 */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* 动效 */
+  --transition-base: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* =========================================
+   全局样式重置与基础样式
+   ========================================= */
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f0f2f5;
+  background-color: var(--color-bg-page);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  line-height: 1.5715;
 }
 
 #root {
   min-height: 100vh;
+}
+
+/* =========================================
+   滚动条样式优化
+   ========================================= */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d9d9d9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #bfbfbf;
+}
+
+/* =========================================
+   企业级卡片样式
+   ========================================= */
+.energy-card {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  transition: all var(--transition-smooth);
+}
+
+.energy-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-primary);
+}
+
+/* =========================================
+   统计卡片样式
+   ========================================= */
+.stat-card {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-smooth);
+}
+
+.stat-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.stat-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-card-icon.primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-active) 100%);
+}
+
+.stat-card-icon.success {
+  background: linear-gradient(135deg, var(--color-success) 0%, #389e0d 100%);
+}
+
+.stat-card-icon.warning {
+  background: linear-gradient(135deg, var(--color-warning) 0%, #d48806 100%);
+}
+
+.stat-card-icon.error {
+  background: linear-gradient(135deg, var(--color-error) 0%, #cf1322 100%);
+}
+
+/* =========================================
+   表格样式优化
+   ========================================= */
+.energy-table .ant-table {
+  font-size: 13px;
+}
+
+.energy-table .ant-table-thead > tr > th {
+  background: #fafafa;
+  border-bottom: 1px solid var(--color-border);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  padding: 12px 16px;
+}
+
+.energy-table .ant-table-tbody > tr > td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.energy-table .ant-table-tbody > tr:hover > td {
+  background: #f0f7ff;
+}
+
+/* =========================================
+   工具类
+   ========================================= */
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-hover {
+  transition: all var(--transition-smooth);
+}
+
+.card-hover:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* 状态指示器动画 */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* =========================================
+   Ant Design 组件覆盖样式
+   ========================================= */
+.ant-card {
+  border-radius: var(--radius-md);
+}
+
+.ant-card-head {
+  font-weight: 600;
+  font-size: 15px;
+  border-bottom: 1px solid var(--color-border) !important;
+}
+
+.ant-btn-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-active) 100%);
+}
+
+.ant-menu-dark .ant-menu-item-selected {
+  background: linear-gradient(90deg, rgba(24, 144, 255, 0.2) 0%, transparent 100%);
+}
+
+/* Tabs 样式优化 */
+.ant-tabs-tab {
+  font-weight: 500;
+}
+
+.ant-tabs-tab-active {
+  color: var(--color-primary);
+}
+
+.ant-tabs-ink-bar {
+  background: var(--color-primary);
 }

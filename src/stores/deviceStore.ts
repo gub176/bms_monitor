@@ -64,9 +64,13 @@ export const useDeviceStore = create<DeviceState>((set, get) => ({
             manufacturer,
             hw_version,
             fw_version,
+            name,
+            firmware_version,
             battery_packs_count,
             cell_count,
             temp_sensor_count,
+            rated_capacity,
+            rated_voltage,
             last_online,
             last_offline,
             status,
@@ -79,9 +83,30 @@ export const useDeviceStore = create<DeviceState>((set, get) => ({
       if (error) throw error
 
       // 提取 devices 数据
-      const devicesList = (data || [])
+      const devicesList: Device[] = (data || [])
         .filter(item => item.devices)
-        .map(item => item.devices)
+        .map(item => {
+          const d = item.devices as unknown as Device
+          return {
+            device_id: d.device_id,
+            auth_key: d.auth_key,
+            manufacturer: d.manufacturer,
+            hw_version: d.hw_version,
+            fw_version: d.fw_version,
+            name: d.name,
+            firmware_version: d.firmware_version,
+            battery_packs_count: d.battery_packs_count,
+            cell_count: d.cell_count,
+            temp_sensor_count: d.temp_sensor_count,
+            rated_capacity: d.rated_capacity,
+            rated_voltage: d.rated_voltage,
+            last_online: d.last_online,
+            last_offline: d.last_offline,
+            status: d.status,
+            created_at: d.created_at,
+            updated_at: d.updated_at,
+          } as Device
+        })
 
       set({ devices: devicesList, loading: false, error: null })
     } catch (err) {

@@ -1,145 +1,140 @@
 import React, { useState } from 'react'
+import { Form, Input, Button, Card, Typography, Alert, Checkbox, Divider } from 'antd'
+import { ThunderboltOutlined, UserOutlined, LockOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
-import { Form, Input, Button, Card, Tabs, message, Typography } from 'antd'
-import { UserOutlined, LockOutlined } from '@ant-design/icons'
 import { useAuthStore } from '../../stores/authStore'
 
 const { Title, Text } = Typography
 
-type TabKey = 'login' | 'signup'
+interface LoginFormValues {
+  email: string
+  password: string
+  remember?: boolean
+}
 
 const Login: React.FC = () => {
   const navigate = useNavigate()
-  const { signIn, signUp } = useAuthStore()
-  const [loading, setLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState<TabKey>('login')
+  const { signIn, loading } = useAuthStore()
+  const [loginError, setLoginError] = useState<string | null>(null)
 
-  const handleLogin = async (values: { email: string; password: string }) => {
-    setLoading(true)
-    const { error } = await signIn(values.email, values.password)
-    setLoading(false)
-
-    if (error) {
-      message.error(error)
+  const handleSubmit = async (values: LoginFormValues) => {
+    setLoginError(null)
+    const result = await signIn(values.email, values.password)
+    if (result.error) {
+      setLoginError(result.error)
     } else {
-      message.success('登录成功')
       navigate('/dashboard')
     }
   }
 
-  const handleSignup = async (values: { email: string; password: string }) => {
-    setLoading(true)
-    const { error } = await signUp(values.email, values.password)
-    setLoading(false)
-
-    if (error) {
-      message.error(error)
-    } else {
-      message.success('注册成功，请检查邮箱验证')
-      setActiveTab('login')
-    }
-  }
-
-  const loginForm = (
-    <Form name="login" onFinish={handleLogin} autoComplete="off">
-      <Form.Item
-        name="email"
-        rules={[{ required: true, message: '请输入邮箱地址', type: 'email' }]}
-      >
-        <Input
-          prefix={<UserOutlined />}
-          placeholder="邮箱地址"
-          size="large"
-          autoComplete="email"
-        />
-      </Form.Item>
-
-      <Form.Item
-        name="password"
-        rules={[{ required: true, message: '请输入密码' }]}
-      >
-        <Input.Password
-          prefix={<LockOutlined />}
-          placeholder="密码"
-          size="large"
-          autoComplete="current-password"
-        />
-      </Form.Item>
-
-      <Form.Item>
-        <Button type="primary" htmlType="submit" loading={loading} size="large" block>
-          登录
-        </Button>
-      </Form.Item>
-    </Form>
-  )
-
-  const signupForm = (
-    <Form name="signup" onFinish={handleSignup} autoComplete="off">
-      <Form.Item
-        name="email"
-        rules={[{ required: true, message: '请输入邮箱地址', type: 'email' }]}
-      >
-        <Input
-          prefix={<UserOutlined />}
-          placeholder="邮箱地址"
-          size="large"
-          autoComplete="email"
-        />
-      </Form.Item>
-
-      <Form.Item
-        name="password"
-        rules={[
-          { required: true, message: '请输入密码' },
-          { min: 6, message: '密码长度至少 6 位' },
-        ]}
-      >
-        <Input.Password
-          prefix={<LockOutlined />}
-          placeholder="密码（至少 6 位）"
-          size="large"
-          autoComplete="new-password"
-        />
-      </Form.Item>
-
-      <Form.Item>
-        <Button type="primary" htmlType="submit" loading={loading} size="large" block>
-          注册
-        </Button>
-      </Form.Item>
-    </Form>
-  )
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <Card className="w-full max-w-md shadow-lg" variant="borderless">
+    <div className="min-h-screen flex items-center justify-center p-4"
+      style={{
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      }}
+    >
+      <Card className="w-full max-w-md shadow-2xl" variant="borderless">
         <div className="text-center mb-8">
-          <Title level={2} className="!mb-2">BMS 监控系统</Title>
-          <Text type="secondary">户用储能设备云端管理</Text>
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl mb-4"
+            style={{ background: 'linear-gradient(135deg, #1890ff 0%, #096dd9 100%)' }}
+          >
+            <ThunderboltOutlined className="text-3xl text-white" />
+          </div>
+          <Title level={2} className="!mb-1">
+            BMS 监控系统
+          </Title>
+          <Text type="secondary">
+            能源管理系统
+          </Text>
         </div>
 
-        <Tabs
-          activeKey={activeTab}
-          onChange={(key) => setActiveTab(key as TabKey)}
-          items={[
-            {
-              key: 'login',
-              label: '登录',
-              children: loginForm,
-            },
-            {
-              key: 'signup',
-              label: '注册',
-              children: signupForm,
-            },
-          ]}
-          size="large"
-        />
+        {loginError && (
+          <Alert
+            message={loginError}
+            type="error"
+            showIcon
+            closable
+            className="mb-6"
+          />
+        )}
 
-        <div className="mt-6 text-center text-sm text-gray-500">
-          <Text type="secondary">
-            演示账号：请使用您的 Supabase 账号登录
+        <Form
+          name="login"
+          layout="vertical"
+          size="large"
+          onFinish={handleSubmit}
+          requiredMark={false}
+        >
+          <Form.Item
+            label={<span className="text-sm font-medium">邮箱</span>}
+            name="email"
+            rules={[
+              { required: true, message: '请输入邮箱' },
+              { type: 'email', message: '邮箱格式不正确' },
+            ]}
+          >
+            <Input
+              prefix={<UserOutlined className="text-gray-400" />}
+              placeholder="请输入邮箱"
+              className="!py-2.5"
+            />
+          </Form.Item>
+
+          <Form.Item
+            label={<span className="text-sm font-medium">密码</span>}
+            name="password"
+            rules={[
+              { required: true, message: '请输入密码' },
+              { min: 6, message: '密码长度至少 6 位' },
+            ]}
+          >
+            <Input.Password
+              prefix={<LockOutlined className="text-gray-400" />}
+              placeholder="请输入密码"
+              className="!py-2.5"
+            />
+          </Form.Item>
+
+          <Form.Item>
+            <div className="flex items-center justify-between">
+              <Form.Item name="remember" valuePropName="checked" noStyle>
+                <Checkbox>记住我</Checkbox>
+              </Form.Item>
+              <Button type="link" className="!p-0">
+                忘记密码？
+              </Button>
+            </div>
+          </Form.Item>
+
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={loading}
+              block
+              size="large"
+              className="!h-11 !text-base font-medium"
+              style={{ background: 'linear-gradient(135deg, #1890ff 0%, #096dd9 100%)' }}
+            >
+              登录
+            </Button>
+          </Form.Item>
+
+          <div className="text-center">
+            <Text type="secondary" className="text-sm">
+              还没有账号？{' '}
+              <Button type="link" className="!p-0">
+                立即注册
+              </Button>
+            </Text>
+          </div>
+        </Form>
+
+        <Divider className="!my-6" />
+
+        <div className="text-center">
+          <Text type="secondary" className="text-xs">
+            © 2026 BMS 监控系统。All rights reserved.
           </Text>
         </div>
       </Card>

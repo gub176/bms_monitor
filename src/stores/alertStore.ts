@@ -13,7 +13,7 @@ interface AlertState {
   clearAlerts: () => void
 }
 
-export const useAlertStore = create<AlertState>((set, get) => ({
+export const useAlertStore = create<AlertState>((set) => ({
   alerts: [],
   activeAlerts: [],
   loading: false,
@@ -79,13 +79,13 @@ export const useAlertStore = create<AlertState>((set, get) => ({
     }))
   },
 
-  updateAlert: (alertId, updates) => {
+  updateAlert: (alertId: string, updates: Partial<Alert>) => {
     set((state) => ({
       alerts: state.alerts.map((a) =>
-        a.id === alertId ? { ...a, ...updates } : a
+        String(a.id) === alertId ? { ...a, ...updates } : a
       ),
       activeAlerts: state.activeAlerts.map((a) =>
-        a.id === alertId ? { ...a, ...updates } : a
+        String(a.id) === alertId ? { ...a, ...updates } : a
       ),
     }))
   },

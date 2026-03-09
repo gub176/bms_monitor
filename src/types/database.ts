@@ -19,9 +19,13 @@ export interface Device {
   manufacturer: string | null
   hw_version: string | null
   fw_version: string | null
+  name: string | null
+  firmware_version: string | null
   battery_packs_count: number | null
   cell_count: number | null
   temp_sensor_count: number | null
+  rated_capacity: number | null
+  rated_voltage: number | null
   last_online: string | null
   last_offline: string | null
   status: 'online' | 'offline' | null
@@ -41,6 +45,14 @@ export interface Telemetry {
   device_id: string
   timestamp: string
   received_at: string
+  soc: number | null
+  soh: number | null
+  total_voltage: number | null
+  total_current: number | null
+  charge_power: number | null
+  discharge_power: number | null
+  temperature_max: number | null
+  temperature_min: number | null
   cell_voltages: number[] | null
   cell_socs: number[] | null
   cell_temperatures: number[] | null
@@ -53,6 +65,8 @@ export interface Status {
   timestamp: string
   received_at: string
   operation_status: number | null
+  charge_status: number | null
+  grid_status: number | null
   charge_discharge_status: number | null
   grid_connection_status: number | null
   main_contactor_status: number | null

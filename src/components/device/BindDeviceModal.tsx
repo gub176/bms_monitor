@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import { Modal, Form, Input, Button, message, Typography } from 'antd'
+import { Modal, Form, Input, Button, App, Typography } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import { useDeviceStore } from '../../stores/deviceStore'
 
-const { Title, Text } = Typography
+const { Text } = Typography
 
 interface BindDeviceModalProps {
   open: boolean
@@ -15,6 +15,7 @@ const BindDeviceModal: React.FC<BindDeviceModalProps> = ({ open, onClose, onSucc
   const { bindDevice } = useDeviceStore()
   const [loading, setLoading] = useState(false)
   const [form] = Form.useForm()
+  const { message } = App.useApp()
 
   const handleSubmit = async (values: { device_id: string }) => {
     setLoading(true)

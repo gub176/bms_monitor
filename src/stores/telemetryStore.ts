@@ -12,7 +12,7 @@ interface TelemetryState {
   clearAllData: () => void
 }
 
-export const useTelemetryStore = create<TelemetryState>((set, get) => ({
+export const useTelemetryStore = create<TelemetryState>((set) => ({
   latestTelemetry: {},
   latestStatus: {},
   telemetryHistory: {},

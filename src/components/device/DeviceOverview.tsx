@@ -1,21 +1,11 @@
 import React from 'react'
-import { Card, Statistic, Progress, Row, Col, Typography, Space, Tag } from 'antd'
-import {
-  ThunderboltOutlined,
-  WifiOutlined,
-  HeatMapOutlined,
-} from '@ant-design/icons'
+import { Card, Statistic, Progress, Row, Col, Typography, Space } from 'antd'
+import { ThunderboltOutlined } from '@ant-design/icons'
 import type { Telemetry, Status } from '../../types/database'
-import {
-  formatVoltage,
-  formatCurrent,
-  formatPower,
-  formatPercent,
-  formatTemperature,
-} from '../../utils/formatters'
+import { formatPower, formatTemperature } from '../../utils/formatters'
 import StatusBadge from '../device/StatusBadge'
 
-const { Title, Text } = Typography
+const { Text } = Typography
 
 interface DeviceOverviewProps {
   telemetry: Telemetry | undefined
@@ -31,7 +21,7 @@ const DeviceOverview: React.FC<DeviceOverviewProps> = ({ telemetry, status }) =>
           <Col span={8}>
             <Space direction="vertical" size="small">
               <Text type="secondary">运行状态</Text>
-              {status?.operation_status !== undefined && (
+              {status?.operation_status !== undefined && status?.operation_status !== null && (
                 <StatusBadge status={status.operation_status} type="operation" />
               )}
             </Space>
@@ -39,16 +29,16 @@ const DeviceOverview: React.FC<DeviceOverviewProps> = ({ telemetry, status }) =>
           <Col span={8}>
             <Space direction="vertical" size="small">
               <Text type="secondary">充放电状态</Text>
-              {status?.charge_status !== undefined && (
-                <StatusBadge status={status.charge_status} type="charge" />
+              {status?.charge_discharge_status !== undefined && status?.charge_discharge_status !== null && (
+                <StatusBadge status={status.charge_discharge_status} type="charge" />
               )}
             </Space>
           </Col>
           <Col span={8}>
             <Space direction="vertical" size="small">
               <Text type="secondary">并网状态</Text>
-              {status?.grid_status !== undefined && (
-                <StatusBadge status={status.grid_status} type="grid" />
+              {status?.grid_connection_status !== undefined && status?.grid_connection_status !== null && (
+                <StatusBadge status={status.grid_connection_status} type="grid" />
               )}
             </Space>
           </Col>
