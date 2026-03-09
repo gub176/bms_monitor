@@ -173,20 +173,20 @@ const Dashboard: React.FC = () => {
   }))
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* 核心指标卡片 */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 gap-3">
         <Card className="stat-card" variant="borderless">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-xs text-gray-500 mb-1">设备总数</div>
-              <div className="text-2xl font-bold text-gray-800">
+              <div className="text-xs text-gray-500 mb-0.5">设备总数</div>
+              <div className="text-xl font-bold text-gray-800">
                 {stats.total}
-                <span className="text-sm text-gray-400 ml-1">台</span>
+                <span className="text-xs text-gray-400 ml-1">台</span>
               </div>
             </div>
             <div className="stat-card-icon primary">
-              <ThunderboltOutlined className="text-xl text-white" />
+              <ThunderboltOutlined className="text-lg text-white" />
             </div>
           </div>
         </Card>
@@ -194,14 +194,14 @@ const Dashboard: React.FC = () => {
         <Card className="stat-card" variant="borderless">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-xs text-gray-500 mb-1">在线设备</div>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-xs text-gray-500 mb-0.5">在线设备</div>
+              <div className="text-xl font-bold text-green-600">
                 {stats.online}
-                <span className="text-sm text-gray-400 ml-1">台</span>
+                <span className="text-xs text-gray-400 ml-1">台</span>
               </div>
             </div>
             <div className="stat-card-icon success">
-              <WifiOutlined className="text-xl text-white" />
+              <WifiOutlined className="text-lg text-white" />
             </div>
           </div>
         </Card>
@@ -209,14 +209,14 @@ const Dashboard: React.FC = () => {
         <Card className="stat-card" variant="borderless">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-xs text-gray-500 mb-1">活跃告警</div>
-              <div className="text-2xl font-bold text-orange-500">
+              <div className="text-xs text-gray-500 mb-0.5">活跃告警</div>
+              <div className="text-xl font-bold text-orange-500">
                 {stats.activeAlerts}
-                <span className="text-sm text-gray-400 ml-1">条</span>
+                <span className="text-xs text-gray-400 ml-1">条</span>
               </div>
             </div>
             <div className="stat-card-icon warning">
-              <AlertOutlined className="text-xl text-white" />
+              <AlertOutlined className="text-lg text-white" />
             </div>
           </div>
         </Card>
@@ -224,14 +224,14 @@ const Dashboard: React.FC = () => {
         <Card className="stat-card" variant="borderless">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-xs text-gray-500 mb-1">系统健康度</div>
-              <div className="text-2xl font-bold text-cyan-600">
+              <div className="text-xs text-gray-500 mb-0.5">系统健康度</div>
+              <div className="text-xl font-bold text-cyan-600">
                 {stats.health}
-                <span className="text-sm text-gray-400 ml-1">%</span>
+                <span className="text-xs text-gray-400 ml-1">%</span>
               </div>
             </div>
             <div className="stat-card-icon" style={{ background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)' }}>
-              <DashboardOutlined className="text-xl text-white" />
+              <DashboardOutlined className="text-lg text-white" />
             </div>
           </div>
         </Card>
@@ -287,7 +287,7 @@ const Dashboard: React.FC = () => {
           </Tag>
         }
       >
-        <div className="h-72">
+        <div className="h-64">
           <Line
             data={trendData.flatMap((d) => [
               { time: d.time, value: d.voltage, type: '电压 (V)' },
@@ -297,7 +297,7 @@ const Dashboard: React.FC = () => {
             yField="value"
             seriesField="type"
             smooth={true}
-            height={260}
+            height={220}
             color={['#1890ff', '#faad14']}
             legend={{ position: 'top', layout: 'horizontal' }}
             xAxis={{

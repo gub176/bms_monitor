@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Layout, Menu, Avatar, Dropdown, Typography, Button, Divider } from 'antd'
+import { Layout, Menu, Avatar, Dropdown, Typography, Button } from 'antd'
 import {
   DashboardOutlined,
   AlertOutlined,
@@ -58,26 +58,24 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         collapsible
         collapsed={collapsed}
         breakpoint="lg"
-        collapsedWidth="80"
-        width="220"
+        collapsedWidth="64"
+        width="200"
         onBreakpoint={(broken) => {
           setCollapsed(broken)
         }}
         className="!bg-[#001529] shadow-lg"
       >
         <div
-          className="h-16 flex items-center justify-center border-b border-gray-700"
+          className="h-14 flex items-center justify-center border-b border-gray-700"
           style={{ background: 'linear-gradient(135deg, #002140 0%, #001529 100%)' }}
         >
           {!collapsed ? (
-            <div className="flex items-center gap-2">
-              <ThunderboltOutlined className="text-blue-400 text-xl" />
-              <Typography.Title level={4} className="!mb-0 text-white !font-semibold">
-                BMS 监控
-              </Typography.Title>
+            <div className="flex items-center gap-2 px-3">
+              <ThunderboltOutlined className="text-blue-400 text-lg flex-shrink-0" />
+              <span className="text-white font-semibold text-sm truncate">BMS 监控</span>
             </div>
           ) : (
-            <ThunderboltOutlined className="text-blue-400 text-xl" />
+            <ThunderboltOutlined className="text-blue-400 text-lg" />
           )}
         </div>
         <Menu
@@ -92,40 +90,40 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       </Sider>
       <Layout>
         <Header
-          className="bg-white px-6 flex items-center justify-between shadow-sm"
-          style={{ height: '56px', lineHeight: '56px' }}
+          className="bg-white px-4 flex items-center justify-between shadow-sm"
+          style={{ height: '48px', lineHeight: '48px' }}
         >
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <Button
               type="text"
               icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
               onClick={() => setCollapsed(!collapsed)}
               className="text-base hover:bg-gray-100"
             />
-            <Divider type="vertical" className="h-6" />
-            <Text type="secondary" className="text-sm">
+            <div className="w-px h-4 bg-gray-200" />
+            <Text type="secondary" className="text-xs">
               能源管理系统
             </Text>
           </div>
           <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
-            <div className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 px-3 py-2 rounded-lg transition-colors">
+            <div className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1.5 rounded-lg transition-colors">
               <Avatar
                 icon={<UserOutlined />}
                 src={undefined}
-                size="default"
+                size="small"
                 className="bg-gradient-to-br from-blue-500 to-blue-600"
               />
               {!collapsed && (
                 <div className="flex flex-col">
-                  <Text className="text-sm font-medium">{email || user?.email}</Text>
-                  <Text type="secondary" className="text-xs">管理员</Text>
+                  <Text className="text-xs font-medium">{email || user?.email}</Text>
+                  <Text type="secondary" className="text-[10px]">管理员</Text>
                 </div>
               )}
             </div>
           </Dropdown>
         </Header>
         <Content className="m-0 bg-[#f5f5f5]">
-          <div className="p-6 min-h-[calc(100vh-56px)]">
+          <div className="p-4 min-h-[calc(100vh-48px)]">
             {children}
           </div>
         </Content>

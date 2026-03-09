@@ -145,16 +145,16 @@ const Alerts: React.FC = () => {
   const historyAlerts = alerts.filter((a) => a.end_time !== null)
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* 页面标题 */}
       <Card className="energy-card" variant="borderless">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600">
-              <AlertOutlined className="text-xl text-white" />
+            <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600">
+              <AlertOutlined className="text-lg text-white" />
             </div>
             <div>
-              <Typography.Title level={4} className="!mb-0.5">
+              <Typography.Title level={5} className="!mb-0.5">
                 告警中心
               </Typography.Title>
               <Text type="secondary" className="text-xs">
@@ -162,16 +162,16 @@ const Alerts: React.FC = () => {
               </Text>
             </div>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-orange-500">{activeAlerts.length}</div>
+              <div className="text-xl font-bold text-orange-500">{activeAlerts.length}</div>
               <Text type="secondary" className="text-xs">
                 活动告警
               </Text>
             </div>
-            <div className="w-px h-10 bg-gray-200" />
+            <div className="w-px h-8 bg-gray-200" />
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-600">{historyAlerts.length}</div>
+              <div className="text-xl font-bold text-gray-600">{historyAlerts.length}</div>
               <Text type="secondary" className="text-xs">
                 历史告警
               </Text>
@@ -204,9 +204,9 @@ const Alerts: React.FC = () => {
                     scroll={{ x: 1000 }}
                   />
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-16">
-                    <div className="p-4 rounded-full bg-green-50 mb-4">
-                      <CheckCircleOutlined className="text-4xl text-green-500" />
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <div className="p-3 rounded-full bg-green-50 mb-3">
+                      <CheckCircleOutlined className="text-3xl text-green-500" />
                     </div>
                     <Typography.Title level={5} className="!mb-1">
                       暂无活动告警
@@ -230,9 +230,9 @@ const Alerts: React.FC = () => {
                     scroll={{ x: 1000 }}
                   />
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-16">
-                    <div className="p-4 rounded-full bg-gray-50 mb-4">
-                      <InfoCircleOutlined className="text-4xl text-gray-400" />
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <div className="p-3 rounded-full bg-gray-50 mb-3">
+                      <InfoCircleOutlined className="text-3xl text-gray-400" />
                     </div>
                     <Typography.Title level={5} className="!mb-1">
                       暂无历史告警
