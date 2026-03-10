@@ -161,6 +161,11 @@ body {
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--color-border);
   transition: all var(--transition-base);
+  height: 100%;
+}
+
+.stat-card-minimal .ant-card-body {
+  padding: 0 !important;
 }
 
 .stat-card-minimal:hover {

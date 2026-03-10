@@ -187,9 +187,9 @@ const Dashboard: React.FC = () => {
   }))
 
   return (
-    <div className="space-y-6">
+    <div>
       {/* 核心指标卡片 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 gap-4 mb-6">
         <StatCard
           title="设备总数"
           value={stats.total}
