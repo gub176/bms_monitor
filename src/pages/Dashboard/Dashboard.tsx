@@ -6,7 +6,6 @@ import { PlusOutlined, ThunderboltOutlined, WifiOutlined, BellOutlined, Dashboar
 import { useDevices } from '../../hooks/useDevices'
 import { useAlertStore } from '../../stores/alertStore'
 import BindDeviceModal from '../../components/device/BindDeviceModal'
-import { Line } from '@ant-design/charts'
 
 const { Title, Text } = Typography
 
@@ -32,14 +31,18 @@ interface StatCardProps {
 const StatCard: React.FC<StatCardProps> = ({ title, value, suffix, icon, color }) => (
   <Card className="stat-card-minimal" variant="borderless">
     <div className="flex items-center justify-between">
-      <div>
-        <Text className="stat-card-label">{title}</Text>
-        <div className="flex items-baseline gap-2 mt-1">
+      <div className="flex-1 min-w-0">
+        <Text className="stat-card-label truncate block">{title}</Text>
+        <div className="flex items-baseline gap-1.5 mt-1.5">
           <span className="stat-card-value" style={{ color }}>{value}</span>
           {suffix && <span className="stat-card-suffix">{suffix}</span>}
         </div>
       </div>
-      <div className="stat-card-icon" style={{ background: `${color}15`, color }}>
+      <div
+        className="stat-card-icon flex-shrink-0"
+        style={{ background: `${color}15`, color }}
+        aria-hidden="true"
+      >
         {icon}
       </div>
     </div>
@@ -61,19 +64,12 @@ const Dashboard: React.FC = () => {
       : 100,
   }
 
-  const trendData = Array.from({ length: 24 }, (_, i) => ({
-    time: `${i.toString().padStart(2, '0')}:00`,
-    voltage: Math.round(3700 + Math.random() * 300) / 100,
-    temperature: Math.round(20 + Math.random() * 15),
-    soc: Math.round(70 + Math.random() * 30),
-  }))
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[600px]">
+      <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <Spin size="large" />
-          <div className="mt-4 text-gray-500">加载设备数据...</div>
+          <div className="mt-4 text-gray-500 text-sm">加载设备数据...</div>
         </div>
       </div>
     )
@@ -81,17 +77,17 @@ const Dashboard: React.FC = () => {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[600px]">
-        <Empty description={error} />
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Empty description={<span className="text-gray-500">{error}</span>} />
       </div>
     )
   }
 
   if (devices.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[600px] p-8 bg-white rounded-xl">
-        <div className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center mb-4">
-          <ThunderboltOutlined className="text-4xl text-blue-500" />
+      <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 bg-white rounded-xl shadow-sm">
+        <div className="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center mb-4">
+          <ThunderboltOutlined className="text-4xl text-[#2d5a3d]" />
         </div>
         <Title level={4} className="!mb-2">暂无设备</Title>
         <Text type="secondary" className="mb-6 text-center max-w-md">
@@ -115,13 +111,16 @@ const Dashboard: React.FC = () => {
       title: '设备名称',
       dataIndex: 'manufacturer',
       key: 'manufacturer',
-      width: 200,
+      width: 220,
       render: (text, record) => (
         <div className="flex items-center gap-3">
-          <div className={`w-2 h-2 rounded-full ${record.status === 'online' ? 'bg-green-500' : 'bg-gray-300'}`} />
-          <div>
-            <div className="font-medium text-gray-900">{text || 'BMS 设备'}</div>
-            <div className="text-xs text-gray-400 font-mono">{record.device_id.slice(0, 16)}...</div>
+          <div
+            className={`w-2 h-2 rounded-full flex-shrink-0 ${record.status === 'online' ? 'bg-green-500' : 'bg-gray-300'}`}
+            aria-label={record.status === 'online' ? '在线' : '离线'}
+          />
+          <div className="min-w-0 flex-1">
+            <div className="font-medium text-gray-900 truncate">{text || 'BMS 设备'}</div>
+            <div className="text-xs text-gray-400 font-mono truncate">{record.device_id.slice(0, 16)}...</div>
           </div>
         </div>
       ),
@@ -145,7 +144,7 @@ const Dashboard: React.FC = () => {
       width: 120,
       align: 'right',
       render: (_: unknown, record: DeviceRow) => (
-        <span className="text-gray-900 font-semibold">{record.voltage.toFixed(2)} V</span>
+        <span className="text-gray-900 font-medium">{record.voltage.toFixed(2)} V</span>
       ),
     },
     {
@@ -154,7 +153,7 @@ const Dashboard: React.FC = () => {
       width: 120,
       align: 'right',
       render: (_: unknown, record: DeviceRow) => (
-        <span className="text-gray-900 font-semibold">{record.temperature.toFixed(1)} °C</span>
+        <span className="text-gray-900 font-medium">{record.temperature.toFixed(1)} °C</span>
       ),
     },
     {
@@ -163,7 +162,7 @@ const Dashboard: React.FC = () => {
       width: 100,
       align: 'right',
       render: (_: unknown, record: DeviceRow) => (
-        <span className="text-gray-900 font-semibold">{record.soc}%</span>
+        <span className="text-gray-900 font-medium">{record.soc}%</span>
       ),
     },
     {
@@ -172,7 +171,7 @@ const Dashboard: React.FC = () => {
       key: 'cell_count',
       width: 90,
       align: 'right',
-      render: (count: number) => <span className="text-gray-500 text-sm">{count || '-'} 串</span>,
+      render: (count: number) => <span className="text-gray-500">{count || '-'} 串</span>,
     },
   ]
 
@@ -188,36 +187,36 @@ const Dashboard: React.FC = () => {
   }))
 
   return (
-    <div className="space-y-4">
-      {/* 核心指标卡片 - 极简风格 */}
-      <div className="grid grid-cols-4 gap-4">
+    <div className="space-y-6">
+      {/* 核心指标卡片 */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="设备总数"
           value={stats.total}
           suffix="台"
           icon={<ThunderboltOutlined className="text-lg" />}
-          color="#1890ff"
+          color="#2d5a3d"
         />
         <StatCard
           title="在线设备"
           value={stats.online}
           suffix="台"
           icon={<WifiOutlined className="text-lg" />}
-          color="#52c41a"
+          color="#4d8f5d"
         />
         <StatCard
           title="活跃告警"
           value={stats.activeAlerts}
           suffix="条"
           icon={<BellOutlined className="text-lg" />}
-          color="#faad14"
+          color="#c9a959"
         />
         <StatCard
           title="系统健康度"
           value={stats.health}
           suffix="%"
           icon={<DashboardOutlined className="text-lg" />}
-          color="#13c2c2"
+          color="#2d5a3d"
         />
       </div>
 
@@ -238,30 +237,6 @@ const Dashboard: React.FC = () => {
             className: 'cursor-pointer hover:bg-blue-50/30 transition-colors',
           })}
         />
-      </Card>
-
-      {/* 24 小时趋势 */}
-      <Card className="energy-card" variant="borderless" title="24 小时趋势" extra={
-        <Badge color="blue" text={<span className="text-sm">实时更新</span>} />
-      }>
-        <div className="h-72">
-          <Line
-            data={trendData.flatMap((d) => [
-              { time: d.time, value: d.voltage, type: '电压 (V)' },
-              { time: d.time, value: d.temperature, type: '温度 (°C)' },
-              { time: d.time, value: d.soc, type: 'SOC (%)' },
-            ])}
-            xField="time"
-            yField="value"
-            seriesField="type"
-            smooth={true}
-            height={260}
-            color={['#1890ff', '#faad14', '#52c41a']}
-            legend={{ position: 'top', layout: 'horizontal' }}
-            xAxis={{ label: { autoRotate: true, autoHide: 'greedy' } }}
-            tooltip={{ showMarkers: true, shared: true }}
-          />
-        </div>
       </Card>
 
       <BindDeviceModal open={bindModalOpen} onClose={() => setBindModalOpen(false)} onSuccess={refresh} />
