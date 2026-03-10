@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Layout, Menu, Avatar, Dropdown, Typography, Button, Badge } from 'antd'
+import { Layout, Menu, Avatar, Dropdown, Typography, Button, Badge, Divider } from 'antd'
 import {
   DashboardOutlined,
   LogoutOutlined,
@@ -15,7 +15,7 @@ import { useDeviceStore } from '../../stores/deviceStore'
 import { useAlertStore } from '../../stores/alertStore'
 
 const { Header, Sider, Content } = Layout
-const { Text, Title } = Typography
+const { Text } = Typography
 
 interface MainLayoutProps {
   children: React.ReactNode
@@ -32,17 +32,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const menuItems = [
     {
       key: '/dashboard',
-      icon: <DashboardOutlined className="text-base" />,
+      icon: <DashboardOutlined />,
       label: '仪表盘',
     },
     {
       key: '/alerts',
-      icon: <BellOutlined className="text-base" />,
+      icon: <BellOutlined />,
       label: (
-        <div className="flex items-center justify-between w-full">
+        <div className="flex items-center gap-2">
           <span>告警中心</span>
           {activeAlerts.length > 0 && (
-            <Badge count={activeAlerts.length} size="small" offset={[0, 0]} />
+            <Badge count={activeAlerts.length} size="small" />
           )}
         </div>
       ),
@@ -62,7 +62,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     },
     {
       key: 'logout',
-      icon: <LogoutOutlined className="text-red-500" />,
+      icon: <LogoutOutlined />,
       label: <span className="text-red-500">退出登录</span>,
       onClick: () => signOut(),
     },
@@ -73,75 +73,54 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   }
 
   return (
-    <Layout className="min-h-screen">
+    <Layout className="min-h-screen bg-[#f5f7fa]">
       <Sider
         trigger={null}
         collapsible
         collapsed={collapsed}
         breakpoint="lg"
         collapsedWidth="80"
-        width="240"
-        onBreakpoint={(broken) => {
-          setCollapsed(broken)
-        }}
-        className="shadow-2xl"
-        style={{
-          background: 'linear-gradient(180deg, #001529 0%, #002140 100%)',
-        }}
+        width="220"
+        onBreakpoint={(broken) => setCollapsed(broken)}
+        className="shadow-sm border-r border-gray-100"
+        style={{ background: '#ffffff' }}
       >
-        <div className="h-16 flex items-center justify-center border-b border-white/10">
+        <div className="h-16 flex items-center justify-center border-b border-gray-100">
           {!collapsed ? (
-            <div className="flex items-center gap-3 px-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg">
-                <ThunderboltOutlined className="text-white text-xl" />
+            <div className="flex items-center gap-2 px-4">
+              <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
+                <ThunderboltOutlined className="text-white text-base" />
               </div>
-              <div className="flex flex-col">
-                <Title level={5} className="!mb-0 !text-white !text-base font-bold">
-                  BMS 监控系统
-                </Title>
-                <Text className="!text-xs !text-gray-400">能源管理系统</Text>
-              </div>
+              <span className="font-semibold text-gray-800 text-base">BMS 监控</span>
             </div>
           ) : (
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg">
-              <ThunderboltOutlined className="text-white text-xl" />
+            <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
+              <ThunderboltOutlined className="text-white text-base" />
             </div>
           )}
         </div>
         <Menu
-          theme="dark"
+          theme="light"
           mode="inline"
           selectedKeys={[location.pathname]}
           items={menuItems}
           onClick={handleMenuClick}
-          className="!border-r-0 mt-4"
-          style={{
-            background: 'transparent',
-          }}
+          className="!border-r-0 mt-2"
         />
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100">
           {!collapsed && (
             <div className="flex items-center gap-3 px-2">
-              <Avatar
-                icon={<UserOutlined />}
-                size="small"
-                className="bg-gradient-to-br from-cyan-400 to-blue-500"
-              />
+              <Avatar icon={<UserOutlined />} size="small" className="bg-blue-500" />
               <div className="flex flex-col flex-1 min-w-0">
-                <Text className="text-xs text-white font-medium truncate">
-                  {email || user?.email}
-                </Text>
+                <Text className="text-xs text-gray-700 font-medium truncate">{email || user?.email}</Text>
                 <Text className="text-[10px] text-gray-400">在线监控</Text>
               </div>
             </div>
           )}
         </div>
       </Sider>
-      <Layout className="bg-[#f0f2f5]">
-        <Header
-          className="bg-white px-6 flex items-center justify-between shadow-sm border-b border-gray-100"
-          style={{ height: '64px', lineHeight: '64px' }}
-        >
+      <Layout>
+        <Header className="bg-white px-6 flex items-center justify-between shadow-sm border-b border-gray-100" style={{ height: '64px' }}>
           <div className="flex items-center gap-4">
             <Button
               type="text"
@@ -162,12 +141,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="hidden lg:flex items-center gap-6 px-4 py-2 bg-gray-50 rounded-xl">
+            <div className="hidden lg:flex items-center gap-4 px-4 py-2 bg-gray-50 rounded-lg">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <Text className="text-xs text-gray-500">系统运行正常</Text>
+                <div className="w-2 h-2 rounded-full bg-green-500" />
+                <Text className="text-xs text-gray-500">系统正常</Text>
               </div>
-              <div className="w-px h-4 bg-gray-200" />
+              <Divider type="vertical" className="h-4" />
               <div className="flex items-center gap-2">
                 <ThunderboltOutlined className="text-blue-500 text-sm" />
                 <Text className="text-xs">
@@ -177,16 +156,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               </div>
             </div>
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
-              <div className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 px-4 py-2 rounded-xl transition-all">
-                <Avatar
-                  icon={<UserOutlined />}
-                  size="default"
-                  className="bg-gradient-to-br from-blue-500 to-blue-600 shadow-md"
-                />
+              <div className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-3 py-2 rounded-lg transition-all">
+                <Avatar icon={<UserOutlined />} size="small" className="bg-blue-500" />
                 <div className="hidden md:flex flex-col">
-                  <Text className="text-sm font-semibold text-gray-800">
-                    {email || user?.email}
-                  </Text>
+                  <Text className="text-sm font-medium text-gray-700">{email || user?.email}</Text>
                   <Text className="text-xs text-gray-400">系统管理员</Text>
                 </div>
               </div>
@@ -194,9 +167,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           </div>
         </Header>
         <Content className="p-6">
-          <div className="max-w-[1600px] mx-auto">
-            {children}
-          </div>
+          <div className="max-w-[1400px] mx-auto">{children}</div>
         </Content>
       </Layout>
     </Layout>
