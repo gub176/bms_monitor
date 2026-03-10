@@ -1,0 +1,337 @@
+/* =========================================
+   Login Container - Split Layout
+   ========================================= */
+.login-container {
+  display: flex;
+  min-height: 100vh;
+  background: var(--login-bg-primary);
+}
+
+/* =========================================
+   Brand Section (Left)
+   ========================================= */
+.login-brand-section {
+  flex: 1;
+  max-width: 60%;
+  background: linear-gradient(135deg, var(--login-bg-primary) 0%, var(--login-brand-gradient) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.brand-content {
+  text-align: center;
+  z-index: 1;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.brand-icon-wrapper {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 32px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, var(--login-primary) 0%, var(--login-primary-hover) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 40px rgba(45, 90, 61, 0.25);
+}
+
+.brand-icon {
+  font-size: 48px;
+  color: #ffffff;
+}
+
+.brand-tagline {
+  font-family: 'Playfair Display', 'Noto Serif SC', serif;
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--login-text-primary);
+  margin: 0;
+  letter-spacing: 2px;
+}
+
+/* 背景图案 */
+.brand-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  animation: breathe 3s ease-in-out infinite;
+}
+
+/* =========================================
+   Form Section (Right)
+   ========================================= */
+.login-form-section {
+  flex: 1;
+  max-width: 40%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: var(--login-bg-primary);
+}
+
+.login-form-wrapper {
+  width: 100%;
+  max-width: 420px;
+  background: var(--login-card-bg);
+  border-radius: 16px;
+  padding: 48px 40px;
+  box-shadow: var(--login-shadow);
+  border: 1px solid var(--login-border);
+  animation: slideIn 0.6s ease-out;
+  transition: box-shadow 0.3s ease;
+}
+
+.login-form-wrapper:hover {
+  box-shadow: var(--login-shadow-hover);
+}
+
+/* =========================================
+   Login Header
+   ========================================= */
+.login-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.login-title {
+  font-family: 'Playfair Display', 'Noto Serif SC', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--login-text-primary);
+  margin: 0 0 8px 0;
+}
+
+.login-subtitle {
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 14px;
+  color: var(--login-text-secondary);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* =========================================
+   Form Elements
+   ========================================= */
+.login-form {
+  margin-top: 24px;
+}
+
+.login-form .ant-form-item-label > label {
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--login-text-primary);
+}
+
+.login-form .ant-input {
+  height: 48px;
+  border-radius: 8px;
+  border: 1.5px solid var(--login-border);
+  font-size: 15px;
+  color: var(--login-text-primary);
+  transition: all 0.2s ease;
+}
+
+.login-form .ant-input:hover {
+  border-color: var(--login-border-hover);
+}
+
+.login-form .ant-input:focus {
+  border-color: var(--login-primary);
+  box-shadow: 0 0 0 2px rgba(45, 90, 61, 0.1);
+}
+
+.login-form .ant-input-affix-wrapper {
+  height: 48px;
+  border-radius: 8px;
+  border: 1.5px solid var(--login-border);
+  font-size: 15px;
+  transition: all 0.2s ease;
+}
+
+.login-form .ant-input-affix-wrapper:hover {
+  border-color: var(--login-border-hover);
+}
+
+.login-form .ant-input-affix-wrapper-focused {
+  border-color: var(--login-primary);
+  box-shadow: 0 0 0 2px rgba(45, 90, 61, 0.1);
+}
+
+.login-form .ant-input-affix-wrapper .ant-input-prefix {
+  color: var(--login-text-tertiary);
+}
+
+/* =========================================
+   Form Options
+   ========================================= */
+.login-form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.login-form-options .ant-checkbox + span {
+  font-size: 13px;
+  color: var(--login-text-secondary);
+}
+
+.forgot-link {
+  font-size: 13px;
+  color: var(--login-primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.forgot-link:hover {
+  color: var(--login-primary-hover);
+}
+
+/* =========================================
+   Submit Button
+   ========================================= */
+.login-submit-btn {
+  height: 48px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--login-primary) 0%, var(--login-primary-hover) 100%);
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(45, 90, 61, 0.3);
+  transition: all 0.2s ease;
+}
+
+.login-submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--login-primary-hover) 0%, var(--login-primary-light) 100%);
+  box-shadow: 0 6px 20px rgba(45, 90, 61, 0.4);
+  transform: translateY(-2px);
+}
+
+.login-submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+  scale: 0.98;
+}
+
+.login-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   Error Alert
+   ========================================= */
+.login-error-alert {
+  margin-bottom: 24px;
+  border-radius: 8px;
+}
+
+/* =========================================
+   Footer
+   ========================================= */
+.login-footer {
+  margin-top: 32px;
+  text-align: center;
+}
+
+.copyright {
+  font-size: 12px;
+  color: var(--login-text-tertiary);
+  margin: 0;
+}
+
+/* =========================================
+   Animations
+   ========================================= */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes breathe {
+  0%, 100% {
+    opacity: 0.05;
+  }
+  50% {
+    opacity: 0.08;
+  }
+}
+
+/* =========================================
+   Responsive Design
+   ========================================= */
+@media (max-width: 1024px) {
+  .login-brand-section {
+    max-width: 50%;
+  }
+
+  .login-form-section {
+    max-width: 50%;
+  }
+
+  .brand-tagline {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+  }
+
+  .login-brand-section {
+    max-width: 100%;
+    min-height: 200px;
+    padding: 40px 24px;
+  }
+
+  .brand-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 16px;
+  }
+
+  .brand-icon {
+    font-size: 32px;
+  }
+
+  .brand-tagline {
+    font-size: 24px;
+  }
+
+  .login-form-section {
+    max-width: 100%;
+    padding: 24px;
+  }
+
+  .login-form-wrapper {
+    padding: 32px 24px;
+    box-shadow: none;
+    border: none;
+  }
+}
