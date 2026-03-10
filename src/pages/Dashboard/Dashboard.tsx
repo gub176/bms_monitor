@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Table, Button, Empty, Spin, Badge, Typography } from 'antd'
+import { Table, Button, Card, Empty, Spin, Badge, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { PlusOutlined, ThunderboltOutlined, WifiOutlined, BellOutlined, DashboardOutlined } from '@ant-design/icons'
 import { useDevices } from '../../hooks/useDevices'
