@@ -1,23 +1,16 @@
 import React, { useState } from 'react'
-import { Form, Input, Button, Card, Typography, Alert, Checkbox, Divider } from 'antd'
-import { ThunderboltOutlined, UserOutlined, LockOutlined } from '@ant-design/icons'
+import { Form, Input, Button, Checkbox, Alert } from 'antd'
+import { ThunderboltOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../stores/authStore'
-
-const { Title, Text } = Typography
-
-interface LoginFormValues {
-  email: string
-  password: string
-  remember?: boolean
-}
+import './Login.css'
 
 const Login: React.FC = () => {
   const navigate = useNavigate()
   const { signIn, loading } = useAuthStore()
   const [loginError, setLoginError] = useState<string | null>(null)
 
-  const handleSubmit = async (values: LoginFormValues) => {
+  const handleSubmit = async (values: { email: string; password: string; remember?: boolean }) => {
     setLoginError(null)
     const result = await signIn(values.email, values.password)
     if (result.error) {
@@ -28,118 +21,101 @@ const Login: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4"
-      style={{
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      }}
-    >
-      <Card className="w-full max-w-sm shadow-2xl" variant="borderless">
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4"
-            style={{ background: 'linear-gradient(135deg, #1890ff 0%, #096dd9 100%)' }}
-          >
-            <ThunderboltOutlined className="text-2xl text-white" />
+    <div className="login-container">
+      {/* 左侧品牌形象区 */}
+      <div className="login-brand-section">
+        <div className="brand-content">
+          <div className="brand-icon-wrapper">
+            <ThunderboltOutlined className="brand-icon" />
           </div>
-          <Title level={3} className="!mb-0.5">
-            BMS 监控系统
-          </Title>
-          <Text type="secondary" className="text-sm">
-            能源管理系统
-          </Text>
+          <h1 className="brand-tagline">智慧能源 · 绿色未来</h1>
         </div>
+        {/* 背景装饰图案 */}
+        <svg className="brand-pattern" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <defs>
+            <pattern id="hex-pattern" x="0" y="0" width="20" height="17.32" patternUnits="userSpaceOnUse">
+              <path d="M10 0L17.32 4.33V12.99L10 17.32L2.68 12.99V4.33L10 0Z" fill="none" stroke="#2d5a3d" strokeWidth="0.5" opacity="0.08"/>
+            </pattern>
+          </defs>
+          <rect width="100" height="100" fill="url(#hex-pattern)"/>
+        </svg>
+      </div>
 
-        {loginError && (
-          <Alert
-            message={loginError}
-            type="error"
-            showIcon
-            closable
-            className="mb-4"
-          />
-        )}
+      {/* 右侧表单区 */}
+      <div className="login-form-section">
+        <div className="login-form-wrapper">
+          <div className="login-header">
+            <h2 className="login-title">BMS 监控系统</h2>
+            <p className="login-subtitle">Energy Management System</p>
+          </div>
 
-        <Form
-          name="login"
-          layout="vertical"
-          size="middle"
-          onFinish={handleSubmit}
-          requiredMark={false}
-        >
-          <Form.Item
-            label={<span className="text-xs font-medium">邮箱</span>}
-            name="email"
-            rules={[
-              { required: true, message: '请输入邮箱' },
-              { type: 'email', message: '邮箱格式不正确' },
-            ]}
-          >
-            <Input
-              prefix={<UserOutlined className="text-gray-400" />}
-              placeholder="请输入邮箱"
-              className="!py-2"
-              size="middle"
+          {loginError && (
+            <Alert
+              message={loginError}
+              type="error"
+              showIcon
+              closable
+              className="login-error-alert"
             />
-          </Form.Item>
+          )}
 
-          <Form.Item
-            label={<span className="text-xs font-medium">密码</span>}
-            name="password"
-            rules={[
-              { required: true, message: '请输入密码' },
-              { min: 6, message: '密码长度至少 6 位' },
-            ]}
+          <Form
+            name="login"
+            layout="vertical"
+            onFinish={handleSubmit}
+            requiredMark={false}
+            className="login-form"
           >
-            <Input.Password
-              prefix={<LockOutlined className="text-gray-400" />}
-              placeholder="请输入密码"
-              className="!py-2"
-              size="middle"
-            />
-          </Form.Item>
-
-          <Form.Item>
-            <div className="flex items-center justify-between">
-              <Form.Item name="remember" valuePropName="checked" noStyle>
-                <Checkbox className="text-xs">记住我</Checkbox>
-              </Form.Item>
-              <Button type="link" className="!p-0 text-xs">
-                忘记密码？
-              </Button>
-            </div>
-          </Form.Item>
-
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={loading}
-              block
-              size="middle"
-              className="!h-10 !text-sm font-medium"
-              style={{ background: 'linear-gradient(135deg, #1890ff 0%, #096dd9 100%)' }}
+            <Form.Item
+              label="邮箱"
+              name="email"
+              rules={[
+                { required: true, message: '请输入邮箱' },
+                { type: 'email', message: '邮箱格式不正确' },
+              ]}
             >
-              登录
-            </Button>
-          </Form.Item>
+              <Input placeholder="请输入邮箱" size="large" />
+            </Form.Item>
 
-          <div className="text-center">
-            <Text type="secondary" className="text-xs">
-              还没有账号？{' '}
-              <Button type="link" className="!p-0 text-xs">
-                立即注册
+            <Form.Item
+              label="密码"
+              name="password"
+              rules={[
+                { required: true, message: '请输入密码' },
+                { min: 6, message: '密码长度至少 6 位' },
+              ]}
+            >
+              <Input.Password placeholder="请输入密码" size="large" />
+            </Form.Item>
+
+            <Form.Item>
+              <div className="login-form-options">
+                <Form.Item name="remember" valuePropName="checked" noStyle>
+                  <Checkbox>记住我</Checkbox>
+                </Form.Item>
+                <a href="#" className="forgot-link">忘记密码？</a>
+              </div>
+            </Form.Item>
+
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                block
+                size="large"
+                className="login-submit-btn"
+              >
+                登录
               </Button>
-            </Text>
+            </Form.Item>
+          </Form>
+
+          <div className="login-footer">
+            <p className="copyright">© 2026 BMS 监控系统。All rights reserved.</p>
           </div>
-        </Form>
-
-        <Divider className="!my-4" />
-
-        <div className="text-center">
-          <Text type="secondary" className="text-xs">
-            © 2026 BMS 监控系统。All rights reserved.
-          </Text>
         </div>
-      </Card>
+      </div>
     </div>
   )
 }
