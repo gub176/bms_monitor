@@ -26,21 +26,23 @@ interface StatCardProps {
   suffix?: string
   icon: React.ReactNode
   color: string
+  colorVar?: string
+  colorType?: 'primary' | 'light' | 'accent'
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, suffix, icon, color }) => (
+const StatCard: React.FC<StatCardProps> = ({ title, value, suffix, icon, color, colorVar, colorType }) => (
   <div className="stat-card-minimal">
     <div className="flex items-center justify-between">
       <div className="flex-1 min-w-0">
         <Text className="stat-card-label truncate block">{title}</Text>
         <div className="flex items-baseline gap-1.5 mt-1.5">
-          <span className="stat-card-value" style={{ color }}>{value}</span>
+          <span className="stat-card-value" style={{ color: colorVar || color }}>{value}</span>
           {suffix && <span className="stat-card-suffix">{suffix}</span>}
         </div>
       </div>
       <div
-        className="stat-card-icon flex-shrink-0"
-        style={{ background: `${color}15`, color }}
+        className="stat-card-icon"
+        data-color={colorType}
         aria-hidden="true"
       >
         {icon}
@@ -69,7 +71,7 @@ const Dashboard: React.FC = () => {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <Spin size="large" />
-          <div className="mt-4 text-gray-500 text-sm">加载设备数据...</div>
+          <div className="mt-4 text-[var(--login-text-tertiary)] text-sm">加载设备数据...</div>
         </div>
       </div>
     )
@@ -78,7 +80,7 @@ const Dashboard: React.FC = () => {
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Empty description={<span className="text-gray-500">{error}</span>} />
+        <Empty description={<span className="text-[var(--login-text-tertiary)]">{error}</span>} />
       </div>
     )
   }
@@ -86,8 +88,8 @@ const Dashboard: React.FC = () => {
   if (devices.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 bg-white rounded-xl shadow-sm">
-        <div className="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center mb-4">
-          <ThunderboltOutlined className="text-4xl text-[#2d5a3d]" />
+        <div className="w-20 h-20 rounded-full bg-[var(--login-bg-secondary)] flex items-center justify-center mb-4">
+          <ThunderboltOutlined className="text-4xl text-[var(--login-primary)]" />
         </div>
         <Title level={4} className="!mb-2">暂无设备</Title>
         <Text type="secondary" className="mb-6 text-center max-w-md">
@@ -115,12 +117,12 @@ const Dashboard: React.FC = () => {
       render: (text, record) => (
         <div className="flex items-center gap-3">
           <div
-            className={`w-2 h-2 rounded-full flex-shrink-0 ${record.status === 'online' ? 'bg-green-500' : 'bg-gray-300'}`}
+            className={`w-2 h-2 rounded-full flex-shrink-0 ${record.status === 'online' ? 'bg-[var(--color-success)]' : 'bg-[var(--color-text-disabled)]'}`}
             aria-label={record.status === 'online' ? '在线' : '离线'}
           />
           <div className="min-w-0 flex-1">
-            <div className="font-medium text-gray-900 truncate">{text || 'BMS 设备'}</div>
-            <div className="text-xs text-gray-400 font-mono truncate">{record.device_id.slice(0, 16)}...</div>
+            <div className="font-medium text-[var(--color-text-primary)] truncate">{text || 'BMS 设备'}</div>
+            <div className="text-xs text-[var(--color-text-tertiary)] font-mono truncate">{record.device_id.slice(0, 16)}...</div>
           </div>
         </div>
       ),
@@ -144,7 +146,7 @@ const Dashboard: React.FC = () => {
       width: 120,
       align: 'right',
       render: (_: unknown, record: DeviceRow) => (
-        <span className="text-gray-900 font-medium">{record.voltage.toFixed(2)} V</span>
+        <span className="text-[var(--color-text-primary)] font-medium">{record.voltage.toFixed(2)} V</span>
       ),
     },
     {
@@ -153,7 +155,7 @@ const Dashboard: React.FC = () => {
       width: 120,
       align: 'right',
       render: (_: unknown, record: DeviceRow) => (
-        <span className="text-gray-900 font-medium">{record.temperature.toFixed(1)} °C</span>
+        <span className="text-[var(--color-text-primary)] font-medium">{record.temperature.toFixed(1)} °C</span>
       ),
     },
     {
@@ -162,7 +164,7 @@ const Dashboard: React.FC = () => {
       width: 100,
       align: 'right',
       render: (_: unknown, record: DeviceRow) => (
-        <span className="text-gray-900 font-medium">{record.soc}%</span>
+        <span className="text-[var(--color-text-primary)] font-medium">{record.soc}%</span>
       ),
     },
     {
@@ -171,7 +173,7 @@ const Dashboard: React.FC = () => {
       key: 'cell_count',
       width: 90,
       align: 'right',
-      render: (count: number) => <span className="text-gray-500">{count || '-'} 串</span>,
+      render: (count: number) => <span className="text-[var(--color-text-tertiary)]">{count || '-'} 串</span>,
     },
   ]
 
@@ -189,13 +191,15 @@ const Dashboard: React.FC = () => {
   return (
     <div>
       {/* 核心指标卡片 */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="stat-cards-grid">
         <StatCard
           title="设备总数"
           value={stats.total}
           suffix="台"
           icon={<ThunderboltOutlined className="text-lg" />}
           color="#2d5a3d"
+          colorVar="var(--login-primary)"
+          colorType="primary"
         />
         <StatCard
           title="在线设备"
@@ -203,6 +207,8 @@ const Dashboard: React.FC = () => {
           suffix="台"
           icon={<WifiOutlined className="text-lg" />}
           color="#4d8f5d"
+          colorVar="var(--login-primary-light)"
+          colorType="light"
         />
         <StatCard
           title="活跃告警"
@@ -210,6 +216,8 @@ const Dashboard: React.FC = () => {
           suffix="条"
           icon={<BellOutlined className="text-lg" />}
           color="#c9a959"
+          colorVar="var(--login-accent)"
+          colorType="accent"
         />
         <StatCard
           title="系统健康度"
@@ -217,6 +225,8 @@ const Dashboard: React.FC = () => {
           suffix="%"
           icon={<DashboardOutlined className="text-lg" />}
           color="#2d5a3d"
+          colorVar="var(--login-primary)"
+          colorType="primary"
         />
       </div>
 
@@ -232,9 +242,10 @@ const Dashboard: React.FC = () => {
           pagination={false}
           size="middle"
           className="energy-table"
+          locale={{ emptyText: '暂无设备数据' }}
           onRow={(record) => ({
             onClick: () => navigate(`/device/${record.device_id}`),
-            className: 'cursor-pointer hover:bg-blue-50/30 transition-colors',
+            className: 'cursor-pointer energy-table-row',
           })}
         />
       </Card>
