@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Table, Button, Card, Empty, Spin, Badge, Typography } from 'antd'
+import { Table, Button, Empty, Spin, Badge, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { PlusOutlined, ThunderboltOutlined, WifiOutlined, BellOutlined, DashboardOutlined } from '@ant-design/icons'
 import { useDevices } from '../../hooks/useDevices'
@@ -29,7 +29,7 @@ interface StatCardProps {
 }
 
 const StatCard: React.FC<StatCardProps> = ({ title, value, suffix, icon, color }) => (
-  <Card className="stat-card-minimal" variant="borderless">
+  <div className="stat-card-minimal">
     <div className="flex items-center justify-between">
       <div className="flex-1 min-w-0">
         <Text className="stat-card-label truncate block">{title}</Text>
@@ -46,7 +46,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, suffix, icon, color }
         {icon}
       </div>
     </div>
-  </Card>
+  </div>
 )
 
 const Dashboard: React.FC = () => {

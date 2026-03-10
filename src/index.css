@@ -162,10 +162,17 @@ body {
   border: 1px solid var(--color-border);
   transition: all var(--transition-base);
   height: 100%;
+  display: block;
 }
 
 .stat-card-minimal .ant-card-body {
   padding: 0 !important;
+}
+
+/* Grid 中的卡片 - 强制行内显示 */
+.grid > .stat-card-minimal {
+  display: block;
+  width: 100%;
 }
 
 .stat-card-minimal:hover {
