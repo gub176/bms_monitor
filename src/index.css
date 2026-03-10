@@ -45,6 +45,39 @@
   /* 动效 */
   --transition-base: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* =========================================
+     Clean Energy Theme - Login Page
+     ========================================= */
+  /* 主背景 - 米白色系 */
+  --login-bg-primary: #f8f6f1;
+  --login-bg-secondary: #ebe7e0;
+  --login-brand-gradient: #e8efe8;
+
+  /* 卡片 */
+  --login-card-bg: #ffffff;
+
+  /* 主色调 - 森林绿 */
+  --login-primary: #2d5a3d;
+  --login-primary-hover: #3d6f4d;
+  --login-primary-light: #4d8f5d;
+
+  /* 强调色 - 铜金 */
+  --login-accent: #c9a959;
+  --login-accent-hover: #d4b76a;
+
+  /* 文字 */
+  --login-text-primary: #1a1a1a;
+  --login-text-secondary: #5a5a5a;
+  --login-text-tertiary: #9a9a9a;
+
+  /* 边框 */
+  --login-border: #d4cfc7;
+  --login-border-hover: #a8bfa8;
+
+  /* 阴影 */
+  --login-shadow: 0 4px 24px rgba(45, 90, 61, 0.12);
+  --login-shadow-hover: 0 8px 32px rgba(45, 90, 61, 0.16);
 }
 
 /* =========================================
@@ -308,4 +341,15 @@ body {
 
 .ant-tabs-ink-bar {
   background: var(--color-primary);
+}
+
+/* =========================================
+   Login Page - Font Families
+   ========================================= */
+.font-serif {
+  font-family: 'Playfair Display', 'Noto Serif SC', serif;
+}
+
+.font-sans {
+  font-family: 'Source Sans 3', 'Microsoft YaHei', sans-serif;
 }
