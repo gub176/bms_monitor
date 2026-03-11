@@ -23,16 +23,14 @@ import {
 } from '@ant-design/icons'
 import { useDeviceStore } from '../../stores/deviceStore'
 import { useAlertStore } from '../../stores/alertStore'
+import { TEMPERATURE_THRESHOLDS } from '../../constants/device'
 
 const { Title, Text } = Typography
 
-// 温度状态类型
-type TemperatureStatus = 'normal' | 'warning' | 'critical'
-
 // 获取温度状态的实用函数
-const getTemperatureStatus = (temperature: number): TemperatureStatus => {
-  if (temperature > 35) return 'critical'
-  if (temperature > 32) return 'warning'
+const getTemperatureStatus = (temperature: number) => {
+  if (temperature > TEMPERATURE_THRESHOLDS.CRITICAL) return 'critical'
+  if (temperature > TEMPERATURE_THRESHOLDS.WARNING) return 'warning'
   return 'normal'
 }
 
@@ -122,21 +120,28 @@ const DeviceDetail: React.FC = () => {
       width: 80,
       render: (index: number) => (
         <Text strong className="text-sm">
-          #{index.toString().padStart(2, '0')}
+          <span aria-label={`电芯 #${index.toString().padStart(2, '0')}`}>
+            #{index.toString().padStart(2, '0')}
+          </span>
         </Text>
       ),
     },
     {
-      title: '电压',
+      title: <span aria-label="电芯电压">电压</span>,
       dataIndex: 'voltage',
       key: 'voltage',
       width: 120,
       render: (voltage: number) => (
-        <span className="font-mono text-[var(--color-primary)] font-medium">{voltage.toFixed(3)} V</span>
+        <span
+          className="font-mono text-[var(--color-primary)] font-medium"
+          aria-label={`电压 ${voltage.toFixed(3)} 伏特`}
+        >
+          {voltage.toFixed(3)} V
+        </span>
       ),
     },
     {
-      title: 'SOC',
+      title: <span aria-label="电芯 SOC">SOC</span>,
       dataIndex: 'soc',
       key: 'soc',
       width: 100,
@@ -148,22 +153,34 @@ const DeviceDetail: React.FC = () => {
             strokeColor={{ '0%': 'var(--color-primary)', '100%': 'var(--color-success)' }}
             format={() => `${Math.round(soc)}%`}
             className="!m-0"
+            aria-label={`荷电状态 ${Math.round(soc)}%`}
           />
         </div>
       ),
     },
     {
-      title: '温度',
+      title: (
+        <div className="flex items-center gap-2">
+          <span>温度</span>
+          <span className="text-[10px] text-[var(--color-text-tertiary)]" aria-hidden="true">
+            ({TEMPERATURE_THRESHOLDS.MIN}~{TEMPERATURE_THRESHOLDS.MAX}°C)
+          </span>
+        </div>
+      ),
       dataIndex: 'temperature',
       key: 'temperature',
       width: 100,
-      render: (temperature: number) => (
-        <span
-          className={`font-mono font-medium ${getTemperatureClass(temperature)}`}
-        >
-          {temperature.toFixed(1)} &deg;C
-        </span>
-      ),
+      render: (temperature: number) => {
+        const status = getTemperatureStatus(temperature)
+        return (
+          <span
+            className={`font-mono font-medium ${getTemperatureClass(temperature)}`}
+            aria-label={`温度 ${temperature.toFixed(1)} 摄氏度，状态：${status === 'normal' ? '正常' : status === 'warning' ? '警告' : '严重'}`}
+          >
+            {temperature.toFixed(1)} °C
+          </span>
+        )
+      },
     },
   ]
 
@@ -208,8 +225,7 @@ const DeviceDetail: React.FC = () => {
           {/* 左侧设备信息 */}
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <div
-              className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-              style={{ background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-active) 100%)' }}
+              className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 device-logo-gradient"
               aria-hidden="true"
             >
               <ThunderboltOutlined className="text-white text-lg" />
@@ -316,7 +332,7 @@ const DeviceDetail: React.FC = () => {
                 </Text>
                 <ThunderboltOutlined className="text-[var(--color-success)]" aria-hidden="true" />
               </div>
-              <div className="text-3xl font-bold text-[var(--color-text-primary)]">
+              <div className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)]">
                 {telemetry.total_voltage.toFixed(1)}
                 <span className="text-sm text-[var(--color-text-tertiary)] ml-1">V</span>
               </div>
@@ -341,7 +357,7 @@ const DeviceDetail: React.FC = () => {
                 </Text>
                 <SafetyOutlined className="text-[var(--color-info)]" aria-hidden="true" />
               </div>
-              <div className="text-3xl font-bold text-[var(--color-text-primary)]">
+              <div className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)]">
                 {telemetry.soh.toFixed(1)}%
               </div>
               <Progress
@@ -363,26 +379,26 @@ const DeviceDetail: React.FC = () => {
                 </Text>
                 <HeatMapOutlined className="text-[var(--color-warning)]" aria-hidden="true" />
               </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-[var(--color-error)]">
-                  {telemetry.temperature_max}&deg;C
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <span className="text-xl md:text-2xl font-bold text-[var(--color-error)]">
+                  {telemetry.temperature_max}°C
                 </span>
                 <Text type="secondary" className="text-sm">~</Text>
-                <span className="text-2xl font-bold text-[var(--color-info)]">
-                  {telemetry.temperature_min}&deg;C
+                <span className="text-xl md:text-2xl font-bold text-[var(--color-info)]">
+                  {telemetry.temperature_min}°C
                 </span>
               </div>
               <div className="flex items-center gap-4">
                 <div>
                   <Text type="secondary" className="text-xs">最高</Text>
                   <div className="text-sm font-medium text-[var(--color-error)]">
-                    {telemetry.temperature_max}&deg;C
+                    {telemetry.temperature_max}°C
                   </div>
                 </div>
                 <div>
                   <Text type="secondary" className="text-xs">最低</Text>
                   <div className="text-sm font-medium text-[var(--color-info)]">
-                    {telemetry.temperature_min}&deg;C
+                    {telemetry.temperature_min}°C
                   </div>
                 </div>
               </div>
@@ -405,22 +421,22 @@ const DeviceDetail: React.FC = () => {
             }
           >
             <Row gutter={[16, 16]}>
-              <Col span={12}>
-                <div className="text-center p-4 rounded-lg bg-[var(--color-primary-light)]">
+              <Col xs={12} sm={12}>
+                <div className="text-center p-4 rounded-lg power-card-charge">
                   <Text type="secondary" className="text-xs block mb-2">
                     充电功率
                   </Text>
-                  <Text strong className="text-2xl text-[var(--color-primary)]">
+                  <Text strong className="text-xl md:text-2xl text-[var(--color-primary)]">
                     {(telemetry.charge_power / 1000).toFixed(2)} kW
                   </Text>
                 </div>
               </Col>
-              <Col span={12}>
-                <div className="text-center p-4 rounded-lg bg-[var(--color-success)]/10">
+              <Col xs={12} sm={12}>
+                <div className="text-center p-4 rounded-lg power-card-discharge">
                   <Text type="secondary" className="text-xs block mb-2">
                     放电功率
                   </Text>
-                  <Text strong className="text-2xl text-[var(--color-success)]">
+                  <Text strong className="text-xl md:text-2xl text-[var(--color-success)]">
                     {(telemetry.discharge_power / 1000).toFixed(2)} kW
                   </Text>
                 </div>
@@ -441,22 +457,22 @@ const DeviceDetail: React.FC = () => {
             }
           >
             <Row gutter={[16, 16]}>
-              <Col span={12}>
-                <div className="text-center p-4 rounded-lg bg-[var(--color-bg-page)]">
+              <Col xs={12} sm={12}>
+                <div className="text-center p-4 rounded-lg device-info-card">
                   <Text type="secondary" className="text-xs block mb-2">
                     电芯数量
                   </Text>
-                  <Text strong className="text-2xl text-[var(--color-text-primary)]">
+                  <Text strong className="text-xl md:text-2xl text-[var(--color-text-primary)]">
                     {device.cell_count || 16} 串
                   </Text>
                 </div>
               </Col>
-              <Col span={12}>
-                <div className="text-center p-4 rounded-lg bg-[var(--color-bg-page)]">
+              <Col xs={12} sm={12}>
+                <div className="text-center p-4 rounded-lg device-info-card">
                   <Text type="secondary" className="text-xs block mb-2">
                     电池包数量
                   </Text>
-                  <Text strong className="text-2xl text-[var(--color-text-primary)]">
+                  <Text strong className="text-xl md:text-2xl text-[var(--color-text-primary)]">
                     {device.battery_packs_count || 1} 个
                   </Text>
                 </div>
@@ -495,6 +511,23 @@ const DeviceDetail: React.FC = () => {
             },
             className: 'energy-table-row',
           })}
+          footer={() => (
+            <div className="temperature-legend" role="legend" aria-label="温度状态图例">
+              <span className="text-xs text-[var(--color-text-secondary)]">温度状态:</span>
+              <div className="temperature-legend-item">
+                <div className="temperature-legend-dot normal" aria-hidden="true" />
+                <span>正常 (≤{TEMPERATURE_THRESHOLDS.WARNING}°C)</span>
+              </div>
+              <div className="temperature-legend-item">
+                <div className="temperature-legend-dot warning" aria-hidden="true" />
+                <span>警告 ({TEMPERATURE_THRESHOLDS.WARNING}-{TEMPERATURE_THRESHOLDS.CRITICAL})°C</span>
+              </div>
+              <div className="temperature-legend-item">
+                <div className="temperature-legend-dot critical" aria-hidden="true" />
+                <span>严重 ({'>'}{TEMPERATURE_THRESHOLDS.CRITICAL}°C)</span>
+              </div>
+            </div>
+          )}
         />
       </Card>
     </main>

@@ -313,6 +313,13 @@ body {
   outline-offset: -2px;
 }
 
+/* 表格 footer 区域 */
+.energy-table .ant-table-footer {
+  background: var(--login-bg-secondary);
+  padding: 12px 16px;
+  border-top: 1px solid var(--color-border);
+}
+
 /* =========================================
    工具类
    ========================================= */
@@ -328,6 +335,46 @@ body {
 
 .card-hover:hover {
   box-shadow: var(--shadow-md);
+}
+
+/* =========================================
+   可点击卡片 - 无障碍增强
+   ========================================= */
+.clickable-card {
+  transition: all var(--transition-base);
+  cursor: pointer;
+}
+
+.clickable-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.clickable-card:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+/* =========================================
+   状态卡片 - 设备状态指示器
+   ========================================= */
+.stat-card {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  transition: all var(--transition-base);
+  height: 100%;
+}
+
+.stat-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.stat-card:focus-within {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
 }
 
 /* =========================================
@@ -414,4 +461,58 @@ body {
   font-family: 'Source Sans 3', 'Microsoft YaHei', sans-serif;
   font-size: 12px;
   color: var(--login-text-secondary);
+}
+
+/* =========================================
+   Device Detail Page Styles
+   ========================================= */
+.device-logo-gradient {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-active) 100%);
+}
+
+/* 功率卡片背景 */
+.power-card-charge {
+  background: var(--color-primary-light);
+}
+
+.power-card-discharge {
+  background: var(--color-success)/10;
+}
+
+.device-info-card {
+  background: var(--color-bg-page);
+}
+
+/* 温度状态图例 */
+.temperature-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.temperature-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.temperature-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.temperature-legend-dot.normal {
+  background: var(--color-success);
+}
+
+.temperature-legend-dot.warning {
+  background: var(--color-warning);
+}
+
+.temperature-legend-dot.critical {
+  background: var(--color-error);
 }
