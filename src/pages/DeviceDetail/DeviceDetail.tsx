@@ -5,30 +5,49 @@ import {
   Row,
   Col,
   Typography,
-  Tag,
-  Spin,
   Empty,
   Button,
   Progress,
   Table,
   Badge,
+  Skeleton,
 } from 'antd'
 import {
-  ArrowLeftOutlined,
   ThunderboltOutlined,
   WifiOutlined,
   HeatMapOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
-  DashboardOutlined,
   ExclamationCircleOutlined,
   SafetyOutlined,
 } from '@ant-design/icons'
 import { useDeviceStore } from '../../stores/deviceStore'
 import { useAlertStore } from '../../stores/alertStore'
-import { formatDateTime } from '../../utils/formatters'
 
 const { Title, Text } = Typography
+
+// 温度状态类型
+type TemperatureStatus = 'normal' | 'warning' | 'critical'
+
+// 获取温度状态的实用函数
+const getTemperatureStatus = (temperature: number): TemperatureStatus => {
+  if (temperature > 35) return 'critical'
+  if (temperature > 32) return 'warning'
+  return 'normal'
+}
+
+// 获取温度状态的 CSS 类
+const getTemperatureClass = (temperature: number): string => {
+  const status = getTemperatureStatus(temperature)
+  switch (status) {
+    case 'critical':
+      return 'text-[var(--color-error)]'
+    case 'warning':
+      return 'text-[var(--color-warning)]'
+    default:
+      return 'text-[var(--color-success)]'
+  }
+}
 
 interface CellData {
   key: string
@@ -44,14 +63,20 @@ const DeviceDetail: React.FC = () => {
   const { devices, fetchDevices } = useDeviceStore()
   const { fetchAlerts, activeAlerts } = useAlertStore()
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const loadData = async () => {
-      await fetchDevices()
-      if (deviceId) {
-        await fetchAlerts(deviceId)
+      try {
+        await fetchDevices()
+        if (deviceId) {
+          await fetchAlerts(deviceId)
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '加载数据失败')
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
     loadData()
   }, [deviceId])
@@ -107,7 +132,7 @@ const DeviceDetail: React.FC = () => {
       key: 'voltage',
       width: 120,
       render: (voltage: number) => (
-        <span className="font-mono text-blue-600 font-medium">{voltage.toFixed(3)} V</span>
+        <span className="font-mono text-[var(--color-primary)] font-medium">{voltage.toFixed(3)} V</span>
       ),
     },
     {
@@ -120,7 +145,7 @@ const DeviceDetail: React.FC = () => {
           <Progress
             percent={Math.round(soc)}
             size="small"
-            strokeColor={{ '0%': '#108ee9', '100%': '#87d068' }}
+            strokeColor={{ '0%': 'var(--color-primary)', '100%': 'var(--color-success)' }}
             format={() => `${Math.round(soc)}%`}
             className="!m-0"
           />
@@ -134,11 +159,9 @@ const DeviceDetail: React.FC = () => {
       width: 100,
       render: (temperature: number) => (
         <span
-          className={`font-mono font-medium ${
-            temperature > 35 ? 'text-red-500' : temperature > 32 ? 'text-orange-500' : 'text-green-600'
-          }`}
+          className={`font-mono font-medium ${getTemperatureClass(temperature)}`}
         >
-          {temperature.toFixed(1)} °C
+          {temperature.toFixed(1)} &deg;C
         </span>
       ),
     },
@@ -146,8 +169,20 @@ const DeviceDetail: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Spin size="large" description="加载设备详情..." />
+      <div className="p-6">
+        <Skeleton active paragraph={{ rows: 12 }} />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[600px]">
+        <Empty description={error}>
+          <Button type="primary" onClick={() => window.location.reload()}>
+            重新加载
+          </Button>
+        </Empty>
       </div>
     )
   }
@@ -166,129 +201,90 @@ const DeviceDetail: React.FC = () => {
   const isOnline = device.status === 'online'
 
   return (
-    <div className="space-y-4">
-      {/* 头部导航和设备信息 */}
+    <main className="space-y-4" aria-label="设备详情页">
+      {/* 头部信息卡片 - 单行标签栏式布局 */}
       <Card className="energy-card" variant="borderless">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              type="text"
-              icon={<ArrowLeftOutlined />}
-              onClick={() => navigate('/dashboard')}
-              className="!text-gray-500 hover:!text-blue-500"
-            />
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600">
-                <ThunderboltOutlined className="text-xl text-white" />
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          {/* 左侧设备信息 */}
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div
+              className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-active) 100%)' }}
+              aria-hidden="true"
+            >
+              <ThunderboltOutlined className="text-white text-lg" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <Title level={4} className="!mb-0 !text-base">
+                  {device.manufacturer || 'BMS 设备'}
+                </Title>
+                <Badge
+                  status={isOnline ? 'success' : 'default'}
+                  text={isOnline ? '在线' : '离线'}
+                />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <Title level={4} className="!mb-1">
-                    {device.manufacturer || 'BMS 设备'}
-                  </Title>
-                  <Badge
-                    status={isOnline ? 'success' : 'default'}
-                    text={isOnline ? '在线' : '离线'}
-                  />
-                </div>
-                <Text type="secondary" className="text-xs font-mono">
-                  {device.device_id}
-                </Text>
+              <div className="flex items-center gap-3 text-xs text-[var(--color-text-tertiary)]">
+                <span className="font-mono">{device.device_id}</span>
+                {deviceAlerts.length > 0 && (
+                  <span className="flex items-center gap-1 text-[var(--color-error)]">
+                    <ExclamationCircleOutlined aria-hidden="true" />
+                    {deviceAlerts.length} 个告警
+                  </span>
+                )}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            {deviceAlerts.length > 0 && (
-              <Tag color="red" className="animate-pulse">
-                <ExclamationCircleOutlined className="mr-1" />
-                {deviceAlerts.length} 个告警
-              </Tag>
-            )}
-            {device.last_online && (
-              <Text type="secondary" className="text-xs">
-                最后在线：{formatDateTime(device.last_online)}
-              </Text>
-            )}
+
+          {/* 右侧状态标签 */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* 运行状态 */}
+            <span
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium ${
+                status.operation_status === 1
+                  ? 'bg-[var(--color-success)]/10 text-[var(--color-success)]'
+                  : 'bg-[var(--color-bg-page)] text-[var(--color-text-secondary)]'
+              }`}
+            >
+              {status.operation_status === 1 ? (
+                <CheckCircleOutlined aria-hidden="true" />
+              ) : (
+                <CloseCircleOutlined aria-hidden="true" />
+              )}
+              {status.operation_status === 1 ? '正常运行' : '停机'}
+            </span>
+
+            {/* 充放电状态 */}
+            <span
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium ${
+                status.charge_status === 1
+                  ? 'bg-[var(--color-info)]/10 text-[var(--color-info)]'
+                  : status.charge_status === 2
+                  ? 'bg-[var(--color-success)]/10 text-[var(--color-success)]'
+                  : 'bg-[var(--color-bg-page)] text-[var(--color-text-secondary)]'
+              }`}
+            >
+              <ThunderboltOutlined aria-hidden="true" />
+              {status.charge_status === 1 ? '充电中' : status.charge_status === 2 ? '放电中' : '空闲'}
+            </span>
+
+            {/* 并网状态 */}
+            <span
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium ${
+                status.grid_status === 1
+                  ? 'bg-[var(--color-success)]/10 text-[var(--color-success)]'
+                  : 'bg-[var(--color-warning)]/10 text-[var(--color-warning)]'
+              }`}
+            >
+              <WifiOutlined aria-hidden="true" />
+              {status.grid_status === 1 ? '已并网' : '离网'}
+            </span>
           </div>
         </div>
       </Card>
 
-      {/* 状态指示器 */}
-      <Row gutter={[16, 16]}>
-        <Col xs={24} sm={8}>
-          <Card className="stat-card" variant="borderless">
-            <div className="flex items-center justify-between">
-              <div>
-                <Text type="secondary" className="text-xs block mb-1">
-                  运行状态
-                </Text>
-                <div className="flex items-center gap-2">
-                  {status.operation_status === 1 ? (
-                    <CheckCircleOutlined className="text-green-500 text-lg" />
-                  ) : (
-                    <CloseCircleOutlined className="text-gray-400 text-lg" />
-                  )}
-                  <Text strong className="text-base">
-                    {status.operation_status === 1 ? '正常运行' : '停机'}
-                  </Text>
-                </div>
-              </div>
-              <div className="p-2.5 rounded-lg bg-gradient-to-br from-green-500 to-green-600">
-                <DashboardOutlined className="text-xl text-white" />
-              </div>
-            </div>
-          </Card>
-        </Col>
-
-        <Col xs={24} sm={8}>
-          <Card className="stat-card" variant="borderless">
-            <div className="flex items-center justify-between">
-              <div>
-                <Text type="secondary" className="text-xs block mb-1">
-                  充放电状态
-                </Text>
-                <div className="flex items-center gap-2">
-                  {status.charge_status === 1 ? (
-                    <Tag color="blue" className="text-xs">充电中</Tag>
-                  ) : status.charge_status === 2 ? (
-                    <Tag color="green" className="text-xs">放电中</Tag>
-                  ) : (
-                    <Tag color="gray" className="text-xs">空闲</Tag>
-                  )}
-                </div>
-              </div>
-              <div className="p-2.5 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600">
-                <SafetyOutlined className="text-xl text-white" />
-              </div>
-            </div>
-          </Card>
-        </Col>
-
-        <Col xs={24} sm={8}>
-          <Card className="stat-card" variant="borderless">
-            <div className="flex items-center justify-between">
-              <div>
-                <Text type="secondary" className="text-xs block mb-1">
-                  并网状态
-                </Text>
-                <div className="flex items-center gap-2">
-                  {status.grid_status === 1 ? (
-                    <Tag color="green" className="text-xs">已并网</Tag>
-                  ) : (
-                    <Tag color="orange" className="text-xs">离网</Tag>
-                  )}
-                </div>
-              </div>
-              <div className="p-2.5 rounded-lg bg-gradient-to-br from-cyan-500 to-cyan-600">
-                <WifiOutlined className="text-xl text-white" />
-              </div>
-            </div>
-          </Card>
-        </Col>
-      </Row>
-
       {/* 关键参数 */}
-      <Row gutter={[16, 16]}>
+      <Row gutter={[16, 16]} role="region" aria-label="关键参数">
         <Col xs={24} sm={12} lg={6}>
           <Card className="energy-card" variant="borderless">
             <div className="space-y-3">
@@ -296,14 +292,14 @@ const DeviceDetail: React.FC = () => {
                 <Text type="secondary" className="text-xs">
                   SOC (荷电状态)
                 </Text>
-                <ThunderboltOutlined className="text-blue-500" />
+                <ThunderboltOutlined className="text-[var(--color-primary)]" aria-hidden="true" />
               </div>
-              <div className="text-3xl font-bold text-gray-800">
+              <div className="text-3xl font-bold text-[var(--color-text-primary)]">
                 {telemetry.soc.toFixed(1)}%
               </div>
               <Progress
                 percent={telemetry.soc}
-                strokeColor={{ '0%': '#1890ff', '100%': '#52c41a' }}
+                strokeColor={{ '0%': 'var(--color-primary)', '100%': 'var(--color-success)' }}
                 showInfo={false}
                 size="small"
               />
@@ -318,11 +314,11 @@ const DeviceDetail: React.FC = () => {
                 <Text type="secondary" className="text-xs">
                   总电压
                 </Text>
-                <ThunderboltOutlined className="text-green-500" />
+                <ThunderboltOutlined className="text-[var(--color-success)]" aria-hidden="true" />
               </div>
-              <div className="text-3xl font-bold text-gray-800">
+              <div className="text-3xl font-bold text-[var(--color-text-primary)]">
                 {telemetry.total_voltage.toFixed(1)}
-                <span className="text-sm text-gray-400 ml-1">V</span>
+                <span className="text-sm text-[var(--color-text-tertiary)] ml-1">V</span>
               </div>
               <div className="flex items-center gap-2">
                 <Text type="secondary" className="text-xs">
@@ -343,14 +339,14 @@ const DeviceDetail: React.FC = () => {
                 <Text type="secondary" className="text-xs">
                   SOH (健康状态)
                 </Text>
-                <SafetyOutlined className="text-purple-500" />
+                <SafetyOutlined className="text-[var(--color-info)]" aria-hidden="true" />
               </div>
-              <div className="text-3xl font-bold text-gray-800">
+              <div className="text-3xl font-bold text-[var(--color-text-primary)]">
                 {telemetry.soh.toFixed(1)}%
               </div>
               <Progress
                 percent={telemetry.soh}
-                strokeColor="#722ed1"
+                strokeColor="var(--color-info)"
                 showInfo={false}
                 size="small"
               />
@@ -365,28 +361,28 @@ const DeviceDetail: React.FC = () => {
                 <Text type="secondary" className="text-xs">
                   温度范围
                 </Text>
-                <HeatMapOutlined className="text-orange-500" />
+                <HeatMapOutlined className="text-[var(--color-warning)]" aria-hidden="true" />
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-red-500">
-                  {telemetry.temperature_max}°C
+                <span className="text-2xl font-bold text-[var(--color-error)]">
+                  {telemetry.temperature_max}&deg;C
                 </span>
                 <Text type="secondary" className="text-sm">~</Text>
-                <span className="text-2xl font-bold text-blue-500">
-                  {telemetry.temperature_min}°C
+                <span className="text-2xl font-bold text-[var(--color-info)]">
+                  {telemetry.temperature_min}&deg;C
                 </span>
               </div>
               <div className="flex items-center gap-4">
                 <div>
                   <Text type="secondary" className="text-xs">最高</Text>
-                  <div className="text-sm font-medium text-red-500">
-                    {telemetry.temperature_max}°C
+                  <div className="text-sm font-medium text-[var(--color-error)]">
+                    {telemetry.temperature_max}&deg;C
                   </div>
                 </div>
                 <div>
                   <Text type="secondary" className="text-xs">最低</Text>
-                  <div className="text-sm font-medium text-blue-500">
-                    {telemetry.temperature_min}°C
+                  <div className="text-sm font-medium text-[var(--color-info)]">
+                    {telemetry.temperature_min}&deg;C
                   </div>
                 </div>
               </div>
@@ -396,35 +392,35 @@ const DeviceDetail: React.FC = () => {
       </Row>
 
       {/* 功率信息 */}
-      <Row gutter={[16, 16]}>
+      <Row gutter={[16, 16]} role="region" aria-label="功率信息">
         <Col xs={24} md={12}>
           <Card
             className="energy-card"
             variant="borderless"
             title={
               <div className="flex items-center gap-2">
-                <ThunderboltOutlined className="text-blue-500" />
+                <ThunderboltOutlined className="text-[var(--color-primary)]" aria-hidden="true" />
                 <span>功率信息</span>
               </div>
             }
           >
             <Row gutter={[16, 16]}>
               <Col span={12}>
-                <div className="text-center p-4 rounded-lg bg-blue-50">
+                <div className="text-center p-4 rounded-lg bg-[var(--color-primary-light)]">
                   <Text type="secondary" className="text-xs block mb-2">
                     充电功率
                   </Text>
-                  <Text strong className="text-2xl text-blue-600">
+                  <Text strong className="text-2xl text-[var(--color-primary)]">
                     {(telemetry.charge_power / 1000).toFixed(2)} kW
                   </Text>
                 </div>
               </Col>
               <Col span={12}>
-                <div className="text-center p-4 rounded-lg bg-green-50">
+                <div className="text-center p-4 rounded-lg bg-[var(--color-success)]/10">
                   <Text type="secondary" className="text-xs block mb-2">
                     放电功率
                   </Text>
-                  <Text strong className="text-2xl text-green-600">
+                  <Text strong className="text-2xl text-[var(--color-success)]">
                     {(telemetry.discharge_power / 1000).toFixed(2)} kW
                   </Text>
                 </div>
@@ -439,28 +435,28 @@ const DeviceDetail: React.FC = () => {
             variant="borderless"
             title={
               <div className="flex items-center gap-2">
-                <HeatMapOutlined className="text-orange-500" />
+                <HeatMapOutlined className="text-[var(--color-warning)]" aria-hidden="true" />
                 <span>设备信息</span>
               </div>
             }
           >
             <Row gutter={[16, 16]}>
               <Col span={12}>
-                <div className="text-center p-4 rounded-lg bg-gray-50">
+                <div className="text-center p-4 rounded-lg bg-[var(--color-bg-page)]">
                   <Text type="secondary" className="text-xs block mb-2">
                     电芯数量
                   </Text>
-                  <Text strong className="text-2xl text-gray-700">
+                  <Text strong className="text-2xl text-[var(--color-text-primary)]">
                     {device.cell_count || 16} 串
                   </Text>
                 </div>
               </Col>
               <Col span={12}>
-                <div className="text-center p-4 rounded-lg bg-gray-50">
+                <div className="text-center p-4 rounded-lg bg-[var(--color-bg-page)]">
                   <Text type="secondary" className="text-xs block mb-2">
                     电池包数量
                   </Text>
-                  <Text strong className="text-2xl text-gray-700">
+                  <Text strong className="text-2xl text-[var(--color-text-primary)]">
                     {device.battery_packs_count || 1} 个
                   </Text>
                 </div>
@@ -476,7 +472,7 @@ const DeviceDetail: React.FC = () => {
         variant="borderless"
         title={
           <div className="flex items-center gap-2">
-            <SafetyOutlined className="text-blue-500" />
+            <SafetyOutlined className="text-[var(--color-primary)]" aria-hidden="true" />
             <span>电芯详情</span>
           </div>
         }
@@ -487,10 +483,21 @@ const DeviceDetail: React.FC = () => {
           pagination={false}
           size="small"
           className="energy-table"
-          scroll={{ x: 500 }}
+          scroll={{ x: 'max-content' }}
+          onRow={() => ({
+            tabIndex: 0,
+            role: 'row',
+            onKeyDown: (e: React.KeyboardEvent) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                // Future: navigate to cell detail
+              }
+            },
+            className: 'energy-table-row',
+          })}
         />
       </Card>
-    </div>
+    </main>
   )
 }
 
