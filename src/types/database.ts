@@ -75,6 +75,7 @@ export interface Alert {
   id: number
   device_id: string
   alert_type: string
+  description?: string
   severity: 1 | 2 | 3
   start_time: string
   end_time: string | null

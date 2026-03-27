@@ -1,14 +1,20 @@
 import React, { useEffect } from 'react'
-import { Table, Tag, Typography, Empty, Spin, Card, Tabs, Badge } from 'antd'
+import { Table, Tag, Typography, Empty, Spin, Card, Tabs, Badge, Button, Space, Checkbox, message as antMessage } from 'antd'
 import {
   AlertOutlined,
   CheckCircleOutlined,
   ExclamationCircleOutlined,
   InfoCircleOutlined,
   WarningOutlined,
+  ExportOutlined,
+  CheckSquareOutlined,
 } from '@ant-design/icons'
 import { useAlertStore } from '../../stores/alertStore'
+import { AlertFilters } from '../../components/alerts/AlertFilters'
+import { AlertSearch } from '../../components/alerts/AlertSearch'
+import { AlertEmptyState } from '../../components/alerts/AlertEmptyState'
 import { formatDateTime } from '../../utils/formatters'
+import { exportAlertsToCSV } from '../../utils/export'
 import type { Alert } from '../../types/database'
 
 const { Text } = Typography
@@ -42,13 +48,59 @@ const AlertLevelTag: React.FC<{ level?: string }> = ({ level }) => {
 }
 
 const Alerts: React.FC = () => {
-  const { alerts, activeAlerts, loading, error, fetchAlerts } = useAlertStore()
+  const {
+    alerts,
+    activeAlerts,
+    loading,
+    error,
+    fetchAlerts,
+    getFilteredAlerts,
+    resetFilters,
+    filters,
+    searchKeyword,
+    selectedAlertIds,
+    toggleAlertSelection,
+    clearSelection,
+    bulkMarkAsRead,
+  } = useAlertStore()
 
   useEffect(() => {
     fetchAlerts()
   }, [fetchAlerts])
 
+  const handleExport = () => {
+    const filteredAlerts = getFilteredAlerts()
+    exportAlertsToCSV(filteredAlerts)
+    antMessage.success('导出成功')
+  }
+
+  const handleBulkMarkAsRead = async () => {
+    if (selectedAlertIds.length === 0) {
+      antMessage.warning('请先选择告警')
+      return
+    }
+    await bulkMarkAsRead()
+    antMessage.success(`已标记 ${selectedAlertIds.length} 条告警为已读`)
+  }
+
+  // 使用筛选后的告警列表
+  const filteredAlerts = getFilteredAlerts()
+  const filteredActiveAlerts = filteredAlerts.filter((a) => a.end_time === null)
+  const filteredHistoryAlerts = filteredAlerts.filter((a) => a.end_time !== null)
+
   const columns = [
+    {
+      title: <Checkbox checked={selectedAlertIds.length > 0} onChange={() => {}} disabled />,
+      dataIndex: 'id',
+      key: 'selection',
+      width: 50,
+      render: (id: string) => (
+        <Checkbox
+          checked={selectedAlertIds.includes(id)}
+          onChange={() => toggleAlertSelection(id)}
+        />
+      ),
+    },
     {
       title: '级别',
       dataIndex: 'alert_level',
@@ -144,6 +196,8 @@ const Alerts: React.FC = () => {
 
   const historyAlerts = alerts.filter((a) => a.end_time !== null)
 
+  const historyAlerts = alerts.filter((a) => a.end_time !== null)
+
   return (
     <div className="space-y-3">
       {/* 页面标题 */}
@@ -164,19 +218,48 @@ const Alerts: React.FC = () => {
           </div>
           <div className="flex items-center gap-4">
             <div className="text-center">
-              <div className="text-xl font-bold text-orange-500">{activeAlerts.length}</div>
+              <div className="text-xl font-bold text-orange-500">{filteredActiveAlerts.length}</div>
               <Text type="secondary" className="text-xs">
                 活动告警
               </Text>
             </div>
             <div className="w-px h-8 bg-gray-200" />
             <div className="text-center">
-              <div className="text-xl font-bold text-gray-600">{historyAlerts.length}</div>
+              <div className="text-xl font-bold text-gray-600">{filteredHistoryAlerts.length}</div>
               <Text type="secondary" className="text-xs">
                 历史告警
               </Text>
             </div>
           </div>
+        </div>
+      </Card>
+
+      {/* 筛选和搜索 */}
+      <Card className="energy-card" variant="borderless">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <AlertSearch />
+            <Space>
+              {selectedAlertIds.length > 0 && (
+                <Button
+                  type="primary"
+                  icon={<CheckSquareOutlined />}
+                  onClick={handleBulkMarkAsRead}
+                  size="small"
+                >
+                  标记已选为已读 ({selectedAlertIds.length})
+                </Button>
+              )}
+              <Button
+                icon={<ExportOutlined />}
+                onClick={handleExport}
+                size="small"
+              >
+                导出 CSV
+              </Button>
+            </Space>
+          </div>
+          <AlertFilters onReset={resetFilters} />
         </div>
       </Card>
 
@@ -188,15 +271,15 @@ const Alerts: React.FC = () => {
             {
               key: 'active',
               label: (
-                <Badge count={activeAlerts.length} offset={[-8, 0]} size="small">
+                <Badge count={filteredActiveAlerts.length} offset={[-8, 0]} size="small">
                   <span className="text-sm font-medium">活动告警</span>
                 </Badge>
               ),
               children:
-                activeAlerts.length > 0 ? (
+                filteredActiveAlerts.length > 0 ? (
                   <Table
                     columns={columns}
-                    dataSource={activeAlerts}
+                    dataSource={filteredActiveAlerts}
                     rowKey="id"
                     pagination={false}
                     size="small"
@@ -204,25 +287,24 @@ const Alerts: React.FC = () => {
                     scroll={{ x: 1000 }}
                   />
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-12">
-                    <div className="p-3 rounded-full bg-green-50 mb-3">
-                      <CheckCircleOutlined className="text-3xl text-green-500" />
-                    </div>
-                    <Typography.Title level={5} className="!mb-1">
-                      暂无活动告警
-                    </Typography.Title>
-                    <Text type="secondary">系统运行正常，所有设备状态良好</Text>
-                  </div>
+                  <AlertEmptyState
+                    type="active"
+                    onRefresh={() => fetchAlerts()}
+                    onClearFilters={resetFilters}
+                    hasActiveFilters={
+                      filters.levels.length > 0 || filters.deviceId || filters.dateRange || searchKeyword !== ''
+                    }
+                  />
                 ),
             },
             {
               key: 'history',
-              label: <span className="text-sm font-medium">历史记录 ({historyAlerts.length})</span>,
+              label: <span className="text-sm font-medium">历史记录 ({filteredHistoryAlerts.length})</span>,
               children:
-                historyAlerts.length > 0 ? (
+                filteredHistoryAlerts.length > 0 ? (
                   <Table
                     columns={columns}
-                    dataSource={historyAlerts}
+                    dataSource={filteredHistoryAlerts}
                     rowKey="id"
                     pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (total) => `共 ${total} 条` }}
                     size="small"
@@ -230,15 +312,14 @@ const Alerts: React.FC = () => {
                     scroll={{ x: 1000 }}
                   />
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-12">
-                    <div className="p-3 rounded-full bg-gray-50 mb-3">
-                      <InfoCircleOutlined className="text-3xl text-gray-400" />
-                    </div>
-                    <Typography.Title level={5} className="!mb-1">
-                      暂无历史告警
-                    </Typography.Title>
-                    <Text type="secondary">系统运行以来未产生任何告警记录</Text>
-                  </div>
+                  <AlertEmptyState
+                    type="history"
+                    onRefresh={() => fetchAlerts()}
+                    onClearFilters={resetFilters}
+                    hasActiveFilters={
+                      filters.levels.length > 0 || filters.deviceId || filters.dateRange || searchKeyword !== ''
+                    }
+                  />
                 ),
             },
           ]}
