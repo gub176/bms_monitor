@@ -196,8 +196,6 @@ const Alerts: React.FC = () => {
 
   const historyAlerts = alerts.filter((a) => a.end_time !== null)
 
-  const historyAlerts = alerts.filter((a) => a.end_time !== null)
-
   return (
     <div className="space-y-3">
       {/* 页面标题 */}
