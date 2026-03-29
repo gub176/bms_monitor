@@ -379,28 +379,18 @@ const DeviceDetail: React.FC = () => {
                 </Text>
                 <HeatMapOutlined className="text-[var(--color-warning)]" aria-hidden="true" />
               </div>
-              <div className="flex items-baseline gap-2 flex-wrap">
-                <span className="text-xl md:text-2xl font-bold text-[var(--color-error)]">
-                  {telemetry.temperature_max}°C
-                </span>
-                <Text type="secondary" className="text-sm">~</Text>
-                <span className="text-xl md:text-2xl font-bold text-[var(--color-info)]">
-                  {telemetry.temperature_min}°C
-                </span>
+              <div className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)]">
+                {telemetry.temperature_max}°C
+                <span className="text-sm text-[var(--color-text-tertiary)] mx-2">~</span>
+                {telemetry.temperature_min}°C
               </div>
-              <div className="flex items-center gap-4">
-                <div>
-                  <Text type="secondary" className="text-xs">最高</Text>
-                  <div className="text-sm font-medium text-[var(--color-error)]">
-                    {telemetry.temperature_max}°C
-                  </div>
-                </div>
-                <div>
-                  <Text type="secondary" className="text-xs">最低</Text>
-                  <div className="text-sm font-medium text-[var(--color-info)]">
-                    {telemetry.temperature_min}°C
-                  </div>
-                </div>
+              <div className="flex items-center gap-2">
+                <Text type="secondary" className="text-xs">
+                  最高 {telemetry.temperature_max}°C
+                </Text>
+                <Text type="secondary" className="text-xs ml-auto">
+                  最低 {telemetry.temperature_min}°C
+                </Text>
               </div>
             </div>
           </Card>

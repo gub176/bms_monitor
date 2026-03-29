@@ -425,9 +425,23 @@ body {
   border-right: 1px solid var(--login-border);
 }
 
+/* 品牌 Logo 渐变背景 */
+.brand-logo-gradient {
+  background: linear-gradient(135deg, var(--login-primary) 0%, var(--login-primary-hover) 100%);
+  box-shadow: 0 2px 8px rgba(45, 90, 61, 0.2);
+}
+
+/* 品牌头部样式 */
+.brand-header {
+  background: linear-gradient(to right, rgba(45, 90, 61, 0.02) 0%, transparent 100%);
+}
+
+/* 菜单选中状态增强 - 左侧强调条 */
 .layout-clean-energy .ant-menu-item-selected {
-  background: rgba(45, 90, 61, 0.08) !important;
+  background: rgba(45, 90, 61, 0.12) !important;
   color: var(--login-primary) !important;
+  border-left: 3px solid var(--login-primary);
+  padding-left: 11px !important;
 }
 
 .layout-clean-energy .ant-menu-item-selected .anticon {
@@ -435,7 +449,28 @@ body {
 }
 
 .layout-clean-energy .ant-menu-item:hover {
-  background: rgba(45, 90, 61, 0.04);
+  background: rgba(45, 90, 61, 0.06);
+}
+
+/* 菜单分组标签 */
+.menu-group-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--login-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 16px 4px;
+  display: block;
+}
+
+/* 菜单分隔线 */
+.layout-clean-energy .ant-menu-item-group-title {
+  padding: 12px 16px 8px;
+  color: var(--login-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* 侧边栏 Logo 样式 */
@@ -446,6 +481,7 @@ body {
 /* 用户头像 - 森林绿 */
 .avatar-green {
   background: var(--login-primary) !important;
+  box-shadow: 0 2px 6px rgba(45, 90, 61, 0.2);
 }
 
 /* 侧边栏文字优化 */
@@ -461,6 +497,31 @@ body {
   font-family: 'Source Sans 3', 'Microsoft YaHei', sans-serif;
   font-size: 12px;
   color: var(--login-text-secondary);
+}
+
+/* 用户区域卡片样式 */
+.user-section {
+  background: linear-gradient(to top, rgba(45, 90, 61, 0.03) 0%, transparent 100%);
+}
+
+/* 退出按钮样式 */
+.logout-button {
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.logout-button:hover {
+  border-color: var(--color-error);
+  background: var(--color-error)/10;
+}
+
+/* 品牌头部居中样式 */
+.brand-header-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 /* =========================================

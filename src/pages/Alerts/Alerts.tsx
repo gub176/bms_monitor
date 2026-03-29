@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
-import { Table, Tag, Typography, Tabs, Badge, Button, Space, Checkbox, message as antMessage, Row, Col, Card, Empty, Spin } from 'antd'
+import { Table, Tag, Typography, Tabs, Badge, Button, Space, Checkbox, message as antMessage, Card, Empty, Spin } from 'antd'
+import { StatCard } from '../../components/device/StatCard'
 import {
   AlertOutlined,
   CheckCircleOutlined,
@@ -8,7 +9,6 @@ import {
   WarningOutlined,
   ExportOutlined,
   CheckSquareOutlined,
-  ArrowUpOutlined,
   FireOutlined,
   HistoryOutlined,
 } from '@ant-design/icons'
@@ -217,100 +217,54 @@ const Alerts: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {/* 统计卡片区域 - 重新设计 */}
+      {/* 统计卡片区域 */}
       <Card className="energy-card" variant="borderless">
         <div className="mb-4">
           <Title level={4} className="!mb-1" style={{ color: 'var(--login-text-primary)' }}>告警中心</Title>
           <Text type="secondary" style={{ color: 'var(--login-text-secondary)' }}>实时监控系统告警，及时处理异常情况</Text>
         </div>
 
-        <Row gutter={[16, 16]}>
-          {/* 活动告警卡片 - 强调显示 */}
-          <Col xs={24} sm={12} lg={6}>
-            <div className="relative overflow-hidden rounded-xl p-4 text-white shadow-lg" style={{ background: 'linear-gradient(135deg, var(--color-error) 0%, #d9363e 100%)' }}>
-              <div className="absolute right-0 top-0 h-24 w-24 translate-x-8 translate-y--8 rounded-full bg-white/10" style={{ borderRadius: '50%' }} />
-              <div className="absolute -bottom-4 -right-4 h-16 w-16 rounded-full bg-white/10" style={{ borderRadius: '50%' }} />
-              <div className="relative z-10">
-                <div className="mb-2 flex items-center gap-2">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
-                    <FireOutlined className="text-xl" />
-                  </div>
-                  <Text className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>活动告警</Text>
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold">{filteredActiveAlerts.length}</span>
-                  {filteredActiveAlerts.length > 0 && (
-                    <ArrowUpOutlined className="text-yellow-300" />
-                  )}
-                </div>
-                <Text className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>需要立即处理</Text>
-              </div>
-            </div>
-          </Col>
-
-          {/* 历史告警卡片 */}
-          <Col xs={24} sm={12} lg={6}>
-            <div className="relative overflow-hidden rounded-xl p-4 text-white shadow-lg" style={{ background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)' }}>
-              <div className="absolute right-0 top-0 h-24 w-24 translate-x-8 translate-y--8 rounded-full bg-white/10" style={{ borderRadius: '50%' }} />
-              <div className="relative z-10">
-                <div className="mb-2 flex items-center gap-2">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
-                    <HistoryOutlined className="text-xl" />
-                  </div>
-                  <Text className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>历史告警</Text>
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold">{filteredHistoryAlerts.length}</span>
-                  <span className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>条记录</span>
-                </div>
-                <Text className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>已归档数据</Text>
-              </div>
-            </div>
-          </Col>
-
-          {/* 严重告警统计 */}
-          <Col xs={24} sm={12} lg={6}>
-            <div className="overflow-hidden rounded-xl p-4 text-white shadow-lg" style={{ background: 'linear-gradient(135deg, var(--color-warning) 0%, #f59e0b 100%)' }}>
-              <div className="relative z-10">
-                <div className="mb-2 flex items-center gap-2">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
-                    <ExclamationCircleOutlined className="text-xl" />
-                  </div>
-                  <Text className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>严重告警</Text>
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold">
-                    {alerts.filter(a => a.severity === 1 && a.end_time === null).length}
-                  </span>
-                </div>
-                <Text className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>级别 1 · 需立即响应</Text>
-              </div>
-            </div>
-          </Col>
-
-          {/* 今日告警统计 */}
-          <Col xs={24} sm={12} lg={6}>
-            <div className="overflow-hidden rounded-xl p-4 text-white shadow-lg" style={{ background: 'linear-gradient(135deg, var(--color-info) 0%, var(--color-primary) 100%)' }}>
-              <div className="relative z-10">
-                <div className="mb-2 flex items-center gap-2">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
-                    <AlertOutlined className="text-xl" />
-                  </div>
-                  <Text className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>今日告警</Text>
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold">
-                    {alerts.filter(a => {
-                      const today = new Date().toDateString()
-                      return new Date(a.start_time).toDateString() === today
-                    }).length}
-                  </span>
-                </div>
-                <Text className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>{new Date().toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' })}</Text>
-              </div>
-            </div>
-          </Col>
-        </Row>
+        <div className="stat-cards-grid">
+          <StatCard
+            title="活动告警"
+            value={filteredActiveAlerts.length}
+            suffix="条"
+            icon={<FireOutlined className="text-lg" />}
+            color="#ef4444"
+            colorVar="var(--color-error)"
+            colorType="primary"
+          />
+          <StatCard
+            title="历史告警"
+            value={filteredHistoryAlerts.length}
+            suffix="条"
+            icon={<HistoryOutlined className="text-lg" />}
+            color="#6b7280"
+            colorVar="var(--login-text-secondary)"
+            colorType="light"
+          />
+          <StatCard
+            title="严重告警"
+            value={alerts.filter(a => a.severity === 1 && a.end_time === null).length}
+            suffix="条"
+            icon={<ExclamationCircleOutlined className="text-lg" />}
+            color="#f59e0b"
+            colorVar="var(--color-warning)"
+            colorType="accent"
+          />
+          <StatCard
+            title="今日告警"
+            value={alerts.filter(a => {
+              const today = new Date().toDateString()
+              return new Date(a.start_time).toDateString() === today
+            }).length}
+            suffix="条"
+            icon={<AlertOutlined className="text-lg" />}
+            color="#3b82f6"
+            colorVar="var(--color-info)"
+            colorType="primary"
+          />
+        </div>
       </Card>
 
       {/* 筛选和搜索区域 */}
