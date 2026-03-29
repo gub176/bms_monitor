@@ -516,3 +516,13 @@ body {
 .temperature-legend-dot.critical {
   background: var(--color-error);
 }
+
+/* Alert severity row highlight */
+.severity-row-highlight > td {
+  background: linear-gradient(to right, rgba(255, 77, 79, 0.04) 0%, rgba(255, 77, 79, 0.02) 100%) !important;
+  border-left: 3px solid var(--color-error);
+}
+
+.severity-row-highlight:hover > td {
+  background: linear-gradient(to right, rgba(255, 77, 79, 0.08) 0%, rgba(255, 77, 79, 0.04) 100%) !important;
+}

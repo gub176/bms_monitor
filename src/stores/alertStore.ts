@@ -55,7 +55,11 @@ export const useAlertStore = create<AlertState>((set, get) => ({
     set({ loading: true, error: null })
     try {
       // 获取当前用户
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError) {
+        set({ loading: false, error: '请先登录' })
+        return
+      }
       if (!user) {
         set({ loading: false, error: '请先登录' })
         return
@@ -67,12 +71,14 @@ export const useAlertStore = create<AlertState>((set, get) => ({
         .select('device_id')
         .eq('user_id', user.id)
 
-      if (devicesError) throw devicesError
+      if (devicesError) {
+        throw devicesError
+      }
 
       const deviceIds = userDevices.map(d => d.device_id)
 
       if (deviceIds.length === 0) {
-        set({ alerts: [], activeAlerts: [], loading: false, error: null })
+        set({ alerts: [], activeAlerts: [], loading: false, error: null, deviceOptions: [] })
         return
       }
 
@@ -83,12 +89,12 @@ export const useAlertStore = create<AlertState>((set, get) => ({
           id,
           device_id,
           alert_type,
-          description,
           severity,
           start_time,
           end_time
         `)
         .in('device_id', deviceIds)
+        .order('start_time', { ascending: false })
 
       if (deviceId) {
         query = query.eq('device_id', deviceId)
@@ -96,19 +102,38 @@ export const useAlertStore = create<AlertState>((set, get) => ({
 
       const { data, error } = await query
 
-      if (error) throw error
+      if (error) {
+        throw error
+      }
 
-      const allAlerts = data || []
+      // severity 到 level 的映射
+      const severityToLevel: Record<number, string> = {
+        1: 'critical',  // 严重
+        2: 'warning',   // 警告
+        3: 'info',      // 提示
+      }
+
+      const allAlerts = (data || []).map((alert) => ({
+        ...alert,
+        level: severityToLevel[alert.severity] || 'info',
+        description: alert.alert_type,
+      }))
       const activeAlerts = allAlerts.filter((a) => a.end_time === null)
+
+      // 更新设备选项
+      const options = deviceIds.map(id => ({
+        value: id,
+        label: id,
+      }))
 
       set({
         alerts: allAlerts,
         activeAlerts,
         loading: false,
         error: null,
+        deviceOptions: options,
       })
     } catch (err) {
-      console.error('Failed to fetch alerts:', err)
       set({
         loading: false,
         error: err instanceof Error ? err.message : '获取告警列表失败',
@@ -217,7 +242,6 @@ export const useAlertStore = create<AlertState>((set, get) => ({
         loading: false,
       }))
     } catch (err) {
-      console.error('Failed to bulk mark alerts as read:', err)
       set({
         loading: false,
         error: err instanceof Error ? err.message : '批量标记失败',
@@ -277,9 +301,8 @@ export const useAlertStore = create<AlertState>((set, get) => ({
 
 // 监听设备列表变化，更新 deviceOptions
 useDeviceStore.subscribe(
-  (state) => state.devices,
-  (devices) => {
-    const options = devices.map((d) => ({
+  (state) => {
+    const options = state.devices.map((d) => ({
       value: d.device_id,
       label: `${d.device_id}${d.manufacturer ? ` (${d.manufacturer})` : ''}`,
     }))

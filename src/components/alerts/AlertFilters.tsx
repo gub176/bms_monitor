@@ -1,5 +1,5 @@
 import React from 'react'
-import { Select, DatePicker, Button, Space } from 'antd'
+import { Select, DatePicker, Button, Space, Tag } from 'antd'
 import { FilterOutlined, ReloadOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { useAlertStore } from '../../stores/alertStore'
@@ -46,37 +46,43 @@ export const AlertFilters: React.FC<AlertFiltersProps> = ({ onReset }) => {
     filters.levels.length > 0 || filters.deviceId || filters.dateRange
 
   return (
-    <div className="flex flex-wrap items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
-      <div className="flex items-center gap-2 text-gray-600">
-        <FilterOutlined className="text-gray-500" />
-        <span className="text-sm font-medium">筛选条件：</span>
+    <div className="flex flex-wrap items-center gap-3 p-4 rounded-lg energy-card" style={{ background: 'var(--login-bg-secondary)' }}>
+      <div className="flex items-center gap-2" style={{ color: 'var(--login-text-secondary)' }}>
+        <FilterOutlined style={{ color: 'var(--login-text-tertiary)' }} />
+        <span className="text-sm font-medium" style={{ color: 'var(--login-text-primary)' }}>筛选条件：</span>
       </div>
 
-      <Space wrap size="middle">
+      <div className="flex flex-wrap items-center gap-3">
         {/* 级别筛选 */}
         <Select
           mode="multiple"
           placeholder="告警级别"
           value={filters.levels}
           onChange={handleLevelChange}
-          className="min-w-[140px]"
+          style={{ width: 200, borderColor: 'var(--login-border)' }}
           allowClear
           size="small"
+          aria-label="按级别筛选告警"
         >
           <Option value="critical">严重</Option>
           <Option value="warning">警告</Option>
           <Option value="info">提示</Option>
         </Select>
 
-        {/* 设备筛选 */}
+        {/* 设备筛选 - 支持搜索过滤 */}
         <Select
           placeholder="设备 ID"
           value={filters.deviceId}
           onChange={handleDeviceChange}
-          className="min-w-[180px]"
+          style={{ width: 300, borderColor: 'var(--login-border)' }}
           allowClear
           size="small"
           showSearch
+          optionFilterProp="label"
+          filterOption={(input, option) =>
+            (option?.label as string)?.toLowerCase().includes(input.toLowerCase()) ?? false
+          }
+          aria-label="按设备筛选告警"
         >
           {deviceOptions.map((device) => (
             <Option key={device.value} value={device.value}>
@@ -90,22 +96,29 @@ export const AlertFilters: React.FC<AlertFiltersProps> = ({ onReset }) => {
           value={filters.dateRange ? [dayjs(filters.dateRange[0]), dayjs(filters.dateRange[1])] : null}
           onChange={handleDateRangeChange}
           size="small"
-          className="min-w-[240px]"
+          style={{ borderColor: 'var(--login-border)' }}
+          aria-label="按时间范围筛选告警"
         />
 
-        {/* 重置按钮 */}
+        {/* 重置按钮 + 筛选状态提示 */}
         {hasActiveFilters && (
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={handleReset}
-            size="small"
-            type="primary"
-            ghost
-          >
-            重置筛选
-          </Button>
+          <Space size="small">
+            <Tag color="blue" className="font-medium" style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}>
+              筛选中
+            </Tag>
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={handleReset}
+              size="small"
+              type="primary"
+              ghost
+              style={{ borderColor: 'var(--color-primary)', color: 'var(--color-primary)' }}
+            >
+              重置
+            </Button>
+          </Space>
         )}
-      </Space>
+      </div>
     </div>
   )
 }

@@ -46,8 +46,10 @@ export const AlertSearch: React.FC = () => {
         onClear={handleClear}
         allowClear
         size="middle"
-        prefix={<SearchOutlined className="text-gray-400" />}
+        prefix={<SearchOutlined style={{ color: 'var(--login-text-tertiary)' }} />}
         className="alert-search-input"
+        style={{ borderColor: 'var(--login-border)' }}
+        aria-label="搜索告警"
       />
     </div>
   )

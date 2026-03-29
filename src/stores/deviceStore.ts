@@ -102,7 +102,6 @@ export const useDeviceStore = create<DeviceState>((set, get) => ({
 
       set({ devices: devicesList, loading: false, error: null })
     } catch (err) {
-      console.error('Failed to fetch devices:', err)
       set({
         loading: false,
         error: err instanceof Error ? err.message : '获取设备列表失败',

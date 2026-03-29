@@ -46,7 +46,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         set({ error: error.message })
         return { error: error.message }
       }
-      set({ user: data.user, session: data.session, error: null })
+      set({ user: data.user, session: data.session, error: null, isAuthenticated: !!data.user })
       return { error: null }
     } catch (err) {
       const message = err instanceof Error ? err.message : '登录失败'
@@ -99,7 +99,6 @@ export const useAuthStore = create<AuthState>((set) => ({
         })
       })
     } catch (err) {
-      console.error('Failed to initialize auth:', err)
       set({ loading: false, error: '认证初始化失败', isAuthenticated: false })
     }
   },

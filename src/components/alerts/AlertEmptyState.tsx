@@ -1,5 +1,5 @@
 import React from 'react'
-import { Empty, Typography, Button } from 'antd'
+import { Typography, Button } from 'antd'
 import {
   CheckCircleOutlined,
   InfoCircleOutlined,
