@@ -298,7 +298,7 @@ const DeviceDetail: React.FC = () => {
               <ThunderboltOutlined className="text-white text-lg" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 flex-wrap">
                 <Title level={4} className="!mb-0 !text-base">
                   {device.manufacturer || 'BMS 设备'}
                 </Title>
@@ -306,11 +306,9 @@ const DeviceDetail: React.FC = () => {
                   status={isOnline ? 'success' : 'default'}
                   text={isOnline ? '在线' : '离线'}
                 />
-              </div>
-              <div className="flex items-center gap-3 text-xs text-[var(--color-text-tertiary)]">
-                <span className="font-mono">{device.device_id}</span>
+                <span className="font-mono text-xs text-[var(--color-text-tertiary)]">{device.device_id}</span>
                 {deviceAlerts.length > 0 && (
-                  <span className="flex items-center gap-1 text-[var(--color-error)]">
+                  <span className="flex items-center gap-1 text-xs text-[var(--color-error)]">
                     <ExclamationCircleOutlined aria-hidden="true" />
                     {deviceAlerts.length} 个告警
                   </span>
