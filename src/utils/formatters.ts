@@ -186,6 +186,83 @@ export function getStatusClass(status: number, type: 'operation' | 'charge' | 'g
 }
 
 /**
+ * Get charge/discharge detailed status text
+ * @param status charge_discharge_status value from database
+ * @returns '充电' | '放电' | '静置' | '未知'
+ */
+export function getChargeDischargeStatusText(status: number | null | undefined): string {
+  if (status === 1) return '充电'
+  if (status === 2) return '放电'
+  if (status === 3) return '静置'
+  return '未知'
+}
+
+/**
+ * Get grid connection detailed status text
+ * @param status grid_connection_status value from database
+ * @returns '并网运行' | '离网运行' | '并网中' | '故障'
+ */
+export function getGridConnectionStatusText(status: number | null | undefined): string {
+  if (status === 1) return '并网运行'
+  if (status === 2) return '离网运行'
+  if (status === 3) return '并网中'
+  if (status === 4) return '故障'
+  return '未知'
+}
+
+/**
+ * Get main contactor status text
+ * @param status main_contactor_status value from database
+ * @returns '闭合' | '断开' | '预充' | '故障'
+ */
+export function getMainContactorStatusText(status: number | null | undefined): string {
+  if (status === 1) return '闭合'
+  if (status === 2) return '断开'
+  if (status === 3) return '预充'
+  if (status === 4) return '故障'
+  return '未知'
+}
+
+/**
+ * Get emergency stop status text
+ * @param status emergency_stop_status value from database
+ * @returns '正常' | '急停按下'
+ */
+export function getEmergencyStopStatusText(status: number | null | undefined): string {
+  return status === 1 ? '正常' : '急停按下'
+}
+
+/**
+ * Get battery balancing status text
+ * @param status battery_balancing_status value from database
+ * @returns '均衡中' | '未均衡' | '故障'
+ */
+export function getBatteryBalancingStatusText(status: number | null | undefined): string {
+  if (status === 1) return '均衡中'
+  if (status === 2) return '未均衡'
+  if (status === 3) return '故障'
+  return '未知'
+}
+
+/**
+ * Get detailed status color for advanced status fields
+ */
+export function getAdvancedStatusColor(
+  status: number | null | undefined,
+  type: 'chargeDischarge' | 'gridConnection' | 'contactor' | 'emergencyStop' | 'balancing'
+): string {
+  const colors = {
+    chargeDischarge: { 1: 'var(--color-info)', 2: 'var(--color-success)', 3: 'var(--color-text-tertiary)' },
+    gridConnection: { 1: 'var(--color-success)', 2: 'var(--color-warning)', 3: 'var(--color-info)', 4: 'var(--color-error)' },
+    contactor: { 1: 'var(--color-success)', 2: 'var(--color-text-tertiary)', 3: 'var(--color-warning)', 4: 'var(--color-error)' },
+    emergencyStop: { 1: 'var(--color-success)', default: 'var(--color-error)' },
+    balancing: { 1: 'var(--color-info)', 2: 'var(--color-text-tertiary)', 3: 'var(--color-error)' },
+  }
+  const typeColors = colors[type]
+  return (status !== null && status !== undefined && typeColors[status as number]) || typeColors.default || 'var(--color-text-tertiary)'
+}
+
+/**
  * Get alert level color
  */
 export function getAlertLevelColor(level: string): string {
