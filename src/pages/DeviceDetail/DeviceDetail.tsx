@@ -302,10 +302,9 @@ const DeviceDetail: React.FC = () => {
                 <span className="font-semibold text-sm">{device.manufacturer || 'BMS 设备'}</span>
                 <span className="text-[var(--color-text-tertiary)]">-</span>
                 <span className="font-mono text-sm">{device.device_id}</span>
-                <Badge
-                  status={isOnline ? 'success' : 'default'}
-                  text={isOnline ? '在线' : '离线'}
-                />
+                <span className={`text-xs ${isOnline ? 'text-[var(--color-success)]' : 'text-[var(--color-text-tertiary)]'}`}>
+                  {isOnline ? '在线' : '离线'}
+                </span>
                 {deviceAlerts.length > 0 && (
                   <span className="text-xs text-[var(--color-text-tertiary)]">
                     （{deviceAlerts.length} 个告警）
