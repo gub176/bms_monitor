@@ -253,10 +253,15 @@ const DeviceDetail: React.FC = () => {
   if (!device) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[600px]">
-        <Empty description="设备不存在" />
-        <Button type="primary" onClick={() => navigate('/dashboard')} className="mt-4">
-          返回仪表盘
-        </Button>
+        <Empty description={devices.length === 0 ? '设备列表加载中...' : '设备不存在或您没有访问权限'} />
+        <div className="mt-4 flex gap-2">
+          <Button type="primary" onClick={() => navigate('/dashboard')}>
+            返回仪表盘
+          </Button>
+          <Button onClick={() => window.location.reload()}>
+            刷新页面
+          </Button>
+        </div>
       </div>
     )
   }
