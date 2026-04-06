@@ -87,19 +87,30 @@ const DeviceDetail: React.FC = () => {
 
   // 获取设备详情和告警数据
   useEffect(() => {
+    let mounted = true
+
     const loadData = async () => {
       try {
         await fetchDevices()
+        if (!mounted) return
+
         if (deviceId) {
           await fetchAlerts(deviceId)
         }
       } catch (err) {
+        if (!mounted) return
         setError(err instanceof Error ? err.message : '加载设备数据失败')
       } finally {
-        setLoading(false)
+        if (mounted) {
+          setLoading(false)
+        }
       }
     }
     loadData()
+
+    return () => {
+      mounted = false
+    }
   }, [deviceId])
 
   // 获取遥测数据并订阅实时更新
@@ -127,6 +138,16 @@ const DeviceDetail: React.FC = () => {
   // 从 Store 获取真实数据
   const telemetry = latestTelemetry[deviceId!] || null
   const status = latestStatus[deviceId!] || null
+
+  // 调试日志
+  console.log('DeviceDetail:', {
+    deviceId,
+    deviceFound: !!device,
+    devicesCount: devices.length,
+    telemetryFound: !!telemetry,
+    statusFound: !!status,
+    loading
+  })
 
   // 电芯数据 - 从真实遥测数据生成
   const cellData: CellData[] = telemetry?.cell_voltages?.map((voltage, index) => ({
