@@ -353,9 +353,9 @@ const DeviceDetail: React.FC = () => {
                 <ThunderboltOutlined className="text-[var(--color-primary)]" aria-hidden="true" />
               </div>
               <div className="text-3xl font-bold text-[var(--color-text-primary)]">
-                {telemetry?.soc?.toFixed(1) ?? '--'}%
+                {telemetry?.soc ? telemetry.soc.toFixed(1) : '--'}%
               </div>
-              {telemetry?.soc !== null && (
+              {telemetry?.soc && (
                 <Progress
                   percent={Math.round(telemetry.soc)}
                   strokeColor={{ '0%': 'var(--color-primary)', '100%': 'var(--color-success)' }}
@@ -377,7 +377,7 @@ const DeviceDetail: React.FC = () => {
                 <ThunderboltOutlined className="text-[var(--color-success)]" aria-hidden="true" />
               </div>
               <div className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)]">
-                {telemetry?.total_voltage?.toFixed(1) ?? '--'}
+                {telemetry?.total_voltage ? telemetry.total_voltage.toFixed(1) : '--'}
                 <span className="text-sm text-[var(--color-text-tertiary)] ml-1">V</span>
               </div>
               <div className="flex items-center gap-2">
@@ -385,7 +385,7 @@ const DeviceDetail: React.FC = () => {
                   总电流
                 </Text>
                 <Text strong className="text-sm ml-auto">
-                  {telemetry?.total_current?.toFixed(1) ?? '--'} A
+                  {telemetry?.total_current ? telemetry.total_current.toFixed(1) : '--'} A
                 </Text>
               </div>
             </div>
@@ -402,9 +402,9 @@ const DeviceDetail: React.FC = () => {
                 <SafetyOutlined className="text-[var(--color-info)]" aria-hidden="true" />
               </div>
               <div className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)]">
-                {telemetry?.soh?.toFixed(1) ?? '--'}%
+                {telemetry?.soh ? telemetry.soh.toFixed(1) : '--'}%
               </div>
-              {telemetry?.soh !== null && (
+              {telemetry?.soh && (
                 <Progress
                   percent={Math.round(telemetry.soh)}
                   strokeColor="var(--color-info)"
