@@ -349,107 +349,113 @@ const DeviceDetail: React.FC = () => {
         <div className="my-4 border-t border-[var(--color-border)]" />
 
         {/* 第二层：详细状态 - 3 列布局 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Row gutter={[16, 16]}>
           {/* 第 1 列：运行状态相关 */}
-          <div className="space-y-3">
-            <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
-              <Text type="secondary" className="text-xs block mb-2">
-                运行状态
-              </Text>
-              <Text strong className="text-sm">
-                {getOperationStatusText(status?.operation_status)}
-              </Text>
+          <Col xs={24} sm={12} lg={8}>
+            <div className="space-y-3">
+              <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
+                <Text type="secondary" className="text-xs block mb-2">
+                  运行状态
+                </Text>
+                <Text strong className="text-sm">
+                  {getOperationStatusText(status?.operation_status)}
+                </Text>
+              </div>
+              <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
+                <Text type="secondary" className="text-xs block mb-2">
+                  充放电状态
+                </Text>
+                <Text
+                  strong
+                  className="text-sm"
+                  style={{ color: getAdvancedStatusColor(status?.charge_discharge_status, 'chargeDischarge') }}
+                >
+                  {getChargeDischargeStatusText(status?.charge_discharge_status)}
+                </Text>
+              </div>
+              <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
+                <Text type="secondary" className="text-xs block mb-2">
+                  主接触器
+                </Text>
+                <Text
+                  strong
+                  className="text-sm"
+                  style={{ color: getAdvancedStatusColor(status?.main_contactor_status, 'contactor') }}
+                >
+                  {getMainContactorStatusText(status?.main_contactor_status)}
+                </Text>
+              </div>
             </div>
-            <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
-              <Text type="secondary" className="text-xs block mb-2">
-                充放电状态
-              </Text>
-              <Text
-                strong
-                className="text-sm"
-                style={{ color: getAdvancedStatusColor(status?.charge_discharge_status, 'chargeDischarge') }}
-              >
-                {getChargeDischargeStatusText(status?.charge_discharge_status)}
-              </Text>
-            </div>
-            <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
-              <Text type="secondary" className="text-xs block mb-2">
-                主接触器
-              </Text>
-              <Text
-                strong
-                className="text-sm"
-                style={{ color: getAdvancedStatusColor(status?.main_contactor_status, 'contactor') }}
-              >
-                {getMainContactorStatusText(status?.main_contactor_status)}
-              </Text>
-            </div>
-          </div>
+          </Col>
 
           {/* 第 2 列：电网相关 */}
-          <div className="space-y-3">
-            <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
-              <Text type="secondary" className="text-xs block mb-2">
-                并网状态
-              </Text>
-              <Text strong className="text-sm">
-                {getGridStatusText(status?.grid_status)}
-              </Text>
+          <Col xs={24} sm={12} lg={8}>
+            <div className="space-y-3">
+              <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
+                <Text type="secondary" className="text-xs block mb-2">
+                  并网状态
+                </Text>
+                <Text strong className="text-sm">
+                  {getGridStatusText(status?.grid_status)}
+                </Text>
+              </div>
+              <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
+                <Text type="secondary" className="text-xs block mb-2">
+                  电网连接
+                </Text>
+                <Text
+                  strong
+                  className="text-sm"
+                  style={{ color: getAdvancedStatusColor(status?.grid_connection_status, 'gridConnection') }}
+                >
+                  {getGridConnectionStatusText(status?.grid_connection_status)}
+                </Text>
+              </div>
+              <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
+                <Text type="secondary" className="text-xs block mb-2">
+                  电池均衡
+                </Text>
+                <Text
+                  strong
+                  className="text-sm"
+                  style={{ color: getAdvancedStatusColor(status?.battery_balancing_status, 'balancing') }}
+                >
+                  {getBatteryBalancingStatusText(status?.battery_balancing_status)}
+                </Text>
+              </div>
             </div>
-            <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
-              <Text type="secondary" className="text-xs block mb-2">
-                电网连接
-              </Text>
-              <Text
-                strong
-                className="text-sm"
-                style={{ color: getAdvancedStatusColor(status?.grid_connection_status, 'gridConnection') }}
-              >
-                {getGridConnectionStatusText(status?.grid_connection_status)}
-              </Text>
-            </div>
-            <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
-              <Text type="secondary" className="text-xs block mb-2">
-                电池均衡
-              </Text>
-              <Text
-                strong
-                className="text-sm"
-                style={{ color: getAdvancedStatusColor(status?.battery_balancing_status, 'balancing') }}
-              >
-                {getBatteryBalancingStatusText(status?.battery_balancing_status)}
-              </Text>
-            </div>
-          </div>
+          </Col>
 
           {/* 第 3 列：安全相关 */}
-          <div className="space-y-3">
-            <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
-              <Text type="secondary" className="text-xs block mb-2">
-                充放电
-              </Text>
-              <Text
-                strong
-                className="text-sm"
-                style={{ color: getAdvancedStatusColor(status?.charge_status, 'chargeDischarge') }}
-              >
-                {getChargeStatusText(status?.charge_status)}
-              </Text>
+          <Col xs={24} sm={12} lg={8}>
+            <div className="space-y-3">
+              <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
+                <Text type="secondary" className="text-xs block mb-2">
+                  充放电
+                </Text>
+                <Text
+                  strong
+                  className="text-sm"
+                  style={{ color: getAdvancedStatusColor(status?.charge_status, 'chargeDischarge') }}
+                >
+                  {getChargeStatusText(status?.charge_status)}
+                </Text>
+              </div>
+              <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
+                <Text type="secondary" className="text-xs block mb-2">
+                  急停按钮
+                </Text>
+                <Text
+                  strong
+                  className="text-sm"
+                  style={{ color: getAdvancedStatusColor(status?.emergency_stop_status, 'emergencyStop') }}
+                >
+                  {getEmergencyStopStatusText(status?.emergency_stop_status)}
+                </Text>
+              </div>
             </div>
-            <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
-              <Text type="secondary" className="text-xs block mb-2">
-                急停按钮
-              </Text>
-              <Text
-                strong
-                className="text-sm"
-                style={{ color: getAdvancedStatusColor(status?.emergency_stop_status, 'emergencyStop') }}
-              >
-                {getEmergencyStopStatusText(status?.emergency_stop_status)}
-              </Text>
-            </div>
-          </div>
-        </div>
+          </Col>
+        </Row>
       </Card>
 
       {/* 关键参数 */}
