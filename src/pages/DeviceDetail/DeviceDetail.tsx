@@ -287,7 +287,7 @@ const DeviceDetail: React.FC = () => {
     <main className="space-y-4" aria-label="设备详情页">
       {/* 头部信息卡片 - 紧凑两层布局 */}
       <Card className="energy-card" variant="borderless">
-        {/* 第一层：设备信息 + 主状态标签 */}
+        {/* 第一层：设备信息 */}
         <div className="flex items-center justify-between flex-wrap gap-4">
           {/* 左侧设备信息 */}
           <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -317,31 +317,6 @@ const DeviceDetail: React.FC = () => {
                 )}
               </div>
             </div>
-          </div>
-
-          {/* 右侧主状态标签 */}
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* 运行状态 */}
-            <span className={getStatusClass(status?.operation_status || 0, 'operation')}>
-              {status?.operation_status === 1 ? (
-                <CheckCircleOutlined aria-hidden="true" />
-              ) : (
-                <CloseCircleOutlined aria-hidden="true" />
-              )}
-              {getOperationStatusText(status?.operation_status)}
-            </span>
-
-            {/* 充放电状态 */}
-            <span className={getStatusClass(status?.charge_status || 0, 'charge')}>
-              <ThunderboltOutlined aria-hidden="true" />
-              {getChargeStatusText(status?.charge_status)}
-            </span>
-
-            {/* 并网状态 */}
-            <span className={getStatusClass(status?.grid_status || 0, 'grid')}>
-              <WifiOutlined aria-hidden="true" />
-              {getGridStatusText(status?.grid_status)}
-            </span>
           </div>
         </div>
 
