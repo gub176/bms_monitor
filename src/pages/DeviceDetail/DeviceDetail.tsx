@@ -23,6 +23,7 @@ import {
 } from '@ant-design/icons'
 import { useDeviceStore } from '../../stores/deviceStore'
 import { useAlertStore } from '../../stores/alertStore'
+import { useTelemetryStore, getPowerState } from '../../stores/telemetryStore'
 import { TEMPERATURE_THRESHOLDS } from '../../constants/device'
 
 const { Title, Text } = Typography
@@ -60,9 +61,21 @@ const DeviceDetail: React.FC = () => {
   const navigate = useNavigate()
   const { devices, fetchDevices } = useDeviceStore()
   const { fetchAlerts, activeAlerts } = useAlertStore()
+  const {
+    latestTelemetry,
+    latestStatus,
+    loading: telemetryLoading,
+    error: telemetryError,
+    fetchTelemetry,
+    fetchStatus,
+    subscribeToTelemetry,
+    unsubscribeFromTelemetry,
+  } = useTelemetryStore()
+
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // 获取设备详情和告警数据
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -71,7 +84,7 @@ const DeviceDetail: React.FC = () => {
           await fetchAlerts(deviceId)
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : '加载数据失败')
+        setError(err instanceof Error ? err.message : '加载设备数据失败')
       } finally {
         setLoading(false)
       }
@@ -79,38 +92,40 @@ const DeviceDetail: React.FC = () => {
     loadData()
   }, [deviceId])
 
+  // 获取遥测数据并订阅实时更新
+  useEffect(() => {
+    if (!deviceId) return
+
+    // 获取初始数据
+    fetchTelemetry(deviceId)
+    fetchStatus(deviceId)
+
+    // 订阅实时更新
+    subscribeToTelemetry(deviceId)
+
+    // 清理函数：组件卸载或 deviceId 变化时取消订阅
+    return () => {
+      if (deviceId) {
+        unsubscribeFromTelemetry(deviceId)
+      }
+    }
+  }, [deviceId])
+
   const device = devices.find((d) => d.device_id === deviceId)
   const deviceAlerts = activeAlerts.filter((a) => a.device_id === deviceId)
 
-  // 模拟遥测数据
-  const telemetry = {
-    soc: 78.5,
-    soh: 95.2,
-    total_voltage: 51.2,
-    total_current: 12.5,
-    charge_power: 640,
-    discharge_power: 0,
-    temperature_max: 32,
-    temperature_min: 28,
-    cell_voltages: Array.from({ length: 16 }, () => 3.2 + Math.random() * 0.1),
-    cell_temperatures: Array.from({ length: 8 }, () => 28 + Math.random() * 4),
-  }
+  // 从 Store 获取真实数据
+  const telemetry = latestTelemetry[deviceId!] || null
+  const status = latestStatus[deviceId!] || null
 
-  // 模拟状态数据
-  const status = {
-    operation_status: 1,
-    charge_status: 1,
-    grid_status: 1,
-  }
-
-  // 电芯数据
-  const cellData: CellData[] = telemetry.cell_voltages.map((voltage, index) => ({
+  // 电芯数据 - 从真实遥测数据生成
+  const cellData: CellData[] = telemetry?.cell_voltages?.map((voltage, index) => ({
     key: index.toString(),
     index: index + 1,
     voltage,
-    soc: 75 + Math.random() * 5,
-    temperature: telemetry.cell_temperatures[index % telemetry.cell_temperatures.length],
-  }))
+    soc: telemetry?.cell_socs?.[index] || 75 + Math.random() * 5,
+    temperature: telemetry?.cell_temperatures?.[index % (telemetry?.cell_temperatures?.length || 1)] || 28 + Math.random() * 4,
+  })) || []
 
   const cellColumns = [
     {
@@ -257,43 +272,43 @@ const DeviceDetail: React.FC = () => {
             {/* 运行状态 */}
             <span
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium ${
-                status.operation_status === 1
+                status?.operation_status === 1
                   ? 'bg-[var(--color-success)]/10 text-[var(--color-success)]'
                   : 'bg-[var(--color-bg-page)] text-[var(--color-text-secondary)]'
               }`}
             >
-              {status.operation_status === 1 ? (
+              {status?.operation_status === 1 ? (
                 <CheckCircleOutlined aria-hidden="true" />
               ) : (
                 <CloseCircleOutlined aria-hidden="true" />
               )}
-              {status.operation_status === 1 ? '正常运行' : '停机'}
+              {status?.operation_status === 1 ? '正常运行' : '停机'}
             </span>
 
             {/* 充放电状态 */}
             <span
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium ${
-                status.charge_status === 1
+                status?.charge_status === 1
                   ? 'bg-[var(--color-info)]/10 text-[var(--color-info)]'
-                  : status.charge_status === 2
+                  : status?.charge_status === 2
                   ? 'bg-[var(--color-success)]/10 text-[var(--color-success)]'
                   : 'bg-[var(--color-bg-page)] text-[var(--color-text-secondary)]'
               }`}
             >
               <ThunderboltOutlined aria-hidden="true" />
-              {status.charge_status === 1 ? '充电中' : status.charge_status === 2 ? '放电中' : '空闲'}
+              {status?.charge_status === 1 ? '充电中' : status?.charge_status === 2 ? '放电中' : '空闲'}
             </span>
 
             {/* 并网状态 */}
             <span
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium ${
-                status.grid_status === 1
+                status?.grid_status === 1
                   ? 'bg-[var(--color-success)]/10 text-[var(--color-success)]'
                   : 'bg-[var(--color-warning)]/10 text-[var(--color-warning)]'
               }`}
             >
               <WifiOutlined aria-hidden="true" />
-              {status.grid_status === 1 ? '已并网' : '离网'}
+              {status?.grid_status === 1 ? '已并网' : '离网'}
             </span>
           </div>
         </div>
@@ -311,14 +326,16 @@ const DeviceDetail: React.FC = () => {
                 <ThunderboltOutlined className="text-[var(--color-primary)]" aria-hidden="true" />
               </div>
               <div className="text-3xl font-bold text-[var(--color-text-primary)]">
-                {telemetry.soc.toFixed(1)}%
+                {telemetry?.soc?.toFixed(1) ?? '--'}%
               </div>
-              <Progress
-                percent={telemetry.soc}
-                strokeColor={{ '0%': 'var(--color-primary)', '100%': 'var(--color-success)' }}
-                showInfo={false}
-                size="small"
-              />
+              {telemetry?.soc !== null && (
+                <Progress
+                  percent={Math.round(telemetry.soc)}
+                  strokeColor={{ '0%': 'var(--color-primary)', '100%': 'var(--color-success)' }}
+                  showInfo={false}
+                  size="small"
+                />
+              )}
             </div>
           </Card>
         </Col>
@@ -333,7 +350,7 @@ const DeviceDetail: React.FC = () => {
                 <ThunderboltOutlined className="text-[var(--color-success)]" aria-hidden="true" />
               </div>
               <div className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)]">
-                {telemetry.total_voltage.toFixed(1)}
+                {telemetry?.total_voltage?.toFixed(1) ?? '--'}
                 <span className="text-sm text-[var(--color-text-tertiary)] ml-1">V</span>
               </div>
               <div className="flex items-center gap-2">
@@ -341,7 +358,7 @@ const DeviceDetail: React.FC = () => {
                   总电流
                 </Text>
                 <Text strong className="text-sm ml-auto">
-                  {telemetry.total_current.toFixed(1)} A
+                  {telemetry?.total_current?.toFixed(1) ?? '--'} A
                 </Text>
               </div>
             </div>
@@ -358,14 +375,16 @@ const DeviceDetail: React.FC = () => {
                 <SafetyOutlined className="text-[var(--color-info)]" aria-hidden="true" />
               </div>
               <div className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)]">
-                {telemetry.soh.toFixed(1)}%
+                {telemetry?.soh?.toFixed(1) ?? '--'}%
               </div>
-              <Progress
-                percent={telemetry.soh}
-                strokeColor="var(--color-info)"
-                showInfo={false}
-                size="small"
-              />
+              {telemetry?.soh !== null && (
+                <Progress
+                  percent={Math.round(telemetry.soh)}
+                  strokeColor="var(--color-info)"
+                  showInfo={false}
+                  size="small"
+                />
+              )}
             </div>
           </Card>
         </Col>
@@ -380,16 +399,16 @@ const DeviceDetail: React.FC = () => {
                 <HeatMapOutlined className="text-[var(--color-warning)]" aria-hidden="true" />
               </div>
               <div className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)]">
-                {telemetry.temperature_max}°C
+                {telemetry?.temperature_max ?? '--'}°C
                 <span className="text-sm text-[var(--color-text-tertiary)] mx-2">~</span>
-                {telemetry.temperature_min}°C
+                {telemetry?.temperature_min ?? '--'}°C
               </div>
               <div className="flex items-center gap-2">
                 <Text type="secondary" className="text-xs">
-                  最高 {telemetry.temperature_max}°C
+                  最高 {telemetry?.temperature_max ?? '--'}°C
                 </Text>
                 <Text type="secondary" className="text-xs ml-auto">
-                  最低 {telemetry.temperature_min}°C
+                  最低 {telemetry?.temperature_min ?? '--'}°C
                 </Text>
               </div>
             </div>
@@ -417,7 +436,7 @@ const DeviceDetail: React.FC = () => {
                     充电功率
                   </Text>
                   <Text strong className="text-xl md:text-2xl text-[var(--color-primary)]">
-                    {(telemetry.charge_power / 1000).toFixed(2)} kW
+                    {telemetry?.charge_power ? (telemetry.charge_power / 1000).toFixed(2) : '0.00'} kW
                   </Text>
                 </div>
               </Col>
@@ -427,7 +446,7 @@ const DeviceDetail: React.FC = () => {
                     放电功率
                   </Text>
                   <Text strong className="text-xl md:text-2xl text-[var(--color-success)]">
-                    {(telemetry.discharge_power / 1000).toFixed(2)} kW
+                    {telemetry?.discharge_power ? (telemetry.discharge_power / 1000).toFixed(2) : '0.00'} kW
                   </Text>
                 </div>
               </Col>
