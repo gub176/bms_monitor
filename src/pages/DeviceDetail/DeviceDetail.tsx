@@ -250,10 +250,21 @@ const DeviceDetail: React.FC = () => {
     )
   }
 
+  if (devices.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[600px]">
+        <Empty description="暂无设备，请先在仪表盘绑定设备" />
+        <Button type="primary" className="mt-4" onClick={() => navigate('/dashboard')}>
+          返回仪表盘
+        </Button>
+      </div>
+    )
+  }
+
   if (!device) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[600px]">
-        <Empty description={devices.length === 0 ? '设备列表加载中...' : '设备不存在或您没有访问权限'} />
+        <Empty description={`设备 ${deviceId} 不存在或您没有访问权限`} />
         <div className="mt-4 flex gap-2">
           <Button type="primary" onClick={() => navigate('/dashboard')}>
             返回仪表盘
