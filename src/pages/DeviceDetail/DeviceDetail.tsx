@@ -285,8 +285,9 @@ const DeviceDetail: React.FC = () => {
 
   return (
     <main className="space-y-4" aria-label="设备详情页">
-      {/* 头部信息卡片 - 单行标签栏式布局 */}
+      {/* 头部信息卡片 - 紧凑两层布局 */}
       <Card className="energy-card" variant="borderless">
+        {/* 第一层：设备信息 + 主状态标签 */}
         <div className="flex items-center justify-between flex-wrap gap-4">
           {/* 左侧设备信息 */}
           <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -318,7 +319,7 @@ const DeviceDetail: React.FC = () => {
             </div>
           </div>
 
-          {/* 右侧状态标签 */}
+          {/* 右侧主状态标签 */}
           <div className="flex items-center gap-2 flex-wrap">
             {/* 运行状态 */}
             <span className={getStatusClass(status?.operation_status || 0, 'operation')}>
@@ -341,6 +342,82 @@ const DeviceDetail: React.FC = () => {
               <WifiOutlined aria-hidden="true" />
               {getGridStatusText(status?.grid_status)}
             </span>
+          </div>
+        </div>
+
+        {/* 分隔线 */}
+        <div className="my-4 border-t border-[var(--color-border)]" />
+
+        {/* 第二层：详细状态网格 */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+          {/* 充放电详细状态 */}
+          <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
+            <Text type="secondary" className="text-xs block mb-2">
+              充放电状态
+            </Text>
+            <Text
+              strong
+              className="text-sm"
+              style={{ color: getAdvancedStatusColor(status?.charge_discharge_status, 'chargeDischarge') }}
+            >
+              {getChargeDischargeStatusText(status?.charge_discharge_status)}
+            </Text>
+          </div>
+
+          {/* 电网连接状态 */}
+          <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
+            <Text type="secondary" className="text-xs block mb-2">
+              电网连接
+            </Text>
+            <Text
+              strong
+              className="text-sm"
+              style={{ color: getAdvancedStatusColor(status?.grid_connection_status, 'gridConnection') }}
+            >
+              {getGridConnectionStatusText(status?.grid_connection_status)}
+            </Text>
+          </div>
+
+          {/* 主接触器状态 */}
+          <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
+            <Text type="secondary" className="text-xs block mb-2">
+              主接触器
+            </Text>
+            <Text
+              strong
+              className="text-sm"
+              style={{ color: getAdvancedStatusColor(status?.main_contactor_status, 'contactor') }}
+            >
+              {getMainContactorStatusText(status?.main_contactor_status)}
+            </Text>
+          </div>
+
+          {/* 急停状态 */}
+          <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
+            <Text type="secondary" className="text-xs block mb-2">
+              急停按钮
+            </Text>
+            <Text
+              strong
+              className="text-sm"
+              style={{ color: getAdvancedStatusColor(status?.emergency_stop_status, 'emergencyStop') }}
+            >
+              {getEmergencyStopStatusText(status?.emergency_stop_status)}
+            </Text>
+          </div>
+
+          {/* 电池均衡状态 */}
+          <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
+            <Text type="secondary" className="text-xs block mb-2">
+              电池均衡
+            </Text>
+            <Text
+              strong
+              className="text-sm"
+              style={{ color: getAdvancedStatusColor(status?.battery_balancing_status, 'balancing') }}
+            >
+              {getBatteryBalancingStatusText(status?.battery_balancing_status)}
+            </Text>
           </div>
         </div>
       </Card>
@@ -518,94 +595,6 @@ const DeviceDetail: React.FC = () => {
                 </div>
               </Col>
             </Row>
-          </Card>
-        </Col>
-      </Row>
-
-      {/* 系统状态 - 高级状态信息 */}
-      <Row gutter={[16, 16]} role="region" aria-label="系统状态">
-        <Col xs={24}>
-          <Card
-            className="energy-card"
-            variant="borderless"
-            title={
-              <div className="flex items-center gap-2">
-                <SafetyOutlined className="text-[var(--color-info)]" aria-hidden="true" />
-                <span>系统状态</span>
-              </div>
-            }
-          >
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-              {/* 充放电详细状态 */}
-              <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
-                <Text type="secondary" className="text-xs block mb-2">
-                  充放电状态
-                </Text>
-                <Text
-                  strong
-                  className="text-sm"
-                  style={{ color: getAdvancedStatusColor(status?.charge_discharge_status, 'chargeDischarge') }}
-                >
-                  {getChargeDischargeStatusText(status?.charge_discharge_status)}
-                </Text>
-              </div>
-
-              {/* 电网连接状态 */}
-              <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
-                <Text type="secondary" className="text-xs block mb-2">
-                  电网连接
-                </Text>
-                <Text
-                  strong
-                  className="text-sm"
-                  style={{ color: getAdvancedStatusColor(status?.grid_connection_status, 'gridConnection') }}
-                >
-                  {getGridConnectionStatusText(status?.grid_connection_status)}
-                </Text>
-              </div>
-
-              {/* 主接触器状态 */}
-              <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
-                <Text type="secondary" className="text-xs block mb-2">
-                  主接触器
-                </Text>
-                <Text
-                  strong
-                  className="text-sm"
-                  style={{ color: getAdvancedStatusColor(status?.main_contactor_status, 'contactor') }}
-                >
-                  {getMainContactorStatusText(status?.main_contactor_status)}
-                </Text>
-              </div>
-
-              {/* 急停状态 */}
-              <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
-                <Text type="secondary" className="text-xs block mb-2">
-                  急停按钮
-                </Text>
-                <Text
-                  strong
-                  className="text-sm"
-                  style={{ color: getAdvancedStatusColor(status?.emergency_stop_status, 'emergencyStop') }}
-                >
-                  {getEmergencyStopStatusText(status?.emergency_stop_status)}
-                </Text>
-              </div>
-
-              {/* 电池均衡状态 */}
-              <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
-                <Text type="secondary" className="text-xs block mb-2">
-                  电池均衡
-                </Text>
-                <Text
-                  strong
-                  className="text-sm"
-                  style={{ color: getAdvancedStatusColor(status?.battery_balancing_status, 'balancing') }}
-                >
-                  {getBatteryBalancingStatusText(status?.battery_balancing_status)}
-                </Text>
-              </div>
-            </div>
           </Card>
         </Col>
       </Row>
