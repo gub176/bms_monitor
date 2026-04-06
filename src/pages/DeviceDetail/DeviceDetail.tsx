@@ -24,6 +24,12 @@ import {
 import { useDeviceStore } from '../../stores/deviceStore'
 import { useAlertStore } from '../../stores/alertStore'
 import { useTelemetryStore, getPowerState } from '../../stores/telemetryStore'
+import {
+  getOperationStatusText,
+  getChargeStatusText,
+  getGridStatusText,
+  getStatusClass,
+} from '../../utils/formatters'
 import { TEMPERATURE_THRESHOLDS } from '../../constants/device'
 
 const { Title, Text } = Typography
@@ -270,45 +276,25 @@ const DeviceDetail: React.FC = () => {
           {/* 右侧状态标签 */}
           <div className="flex items-center gap-2 flex-wrap">
             {/* 运行状态 */}
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium ${
-                status?.operation_status === 1
-                  ? 'bg-[var(--color-success)]/10 text-[var(--color-success)]'
-                  : 'bg-[var(--color-bg-page)] text-[var(--color-text-secondary)]'
-              }`}
-            >
+            <span className={getStatusClass(status?.operation_status || 0, 'operation')}>
               {status?.operation_status === 1 ? (
                 <CheckCircleOutlined aria-hidden="true" />
               ) : (
                 <CloseCircleOutlined aria-hidden="true" />
               )}
-              {status?.operation_status === 1 ? '正常运行' : '停机'}
+              {getOperationStatusText(status?.operation_status)}
             </span>
 
             {/* 充放电状态 */}
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium ${
-                status?.charge_status === 1
-                  ? 'bg-[var(--color-info)]/10 text-[var(--color-info)]'
-                  : status?.charge_status === 2
-                  ? 'bg-[var(--color-success)]/10 text-[var(--color-success)]'
-                  : 'bg-[var(--color-bg-page)] text-[var(--color-text-secondary)]'
-              }`}
-            >
+            <span className={getStatusClass(status?.charge_status || 0, 'charge')}>
               <ThunderboltOutlined aria-hidden="true" />
-              {status?.charge_status === 1 ? '充电中' : status?.charge_status === 2 ? '放电中' : '空闲'}
+              {getChargeStatusText(status?.charge_status)}
             </span>
 
             {/* 并网状态 */}
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium ${
-                status?.grid_status === 1
-                  ? 'bg-[var(--color-success)]/10 text-[var(--color-success)]'
-                  : 'bg-[var(--color-warning)]/10 text-[var(--color-warning)]'
-              }`}
-            >
+            <span className={getStatusClass(status?.grid_status || 0, 'grid')}>
               <WifiOutlined aria-hidden="true" />
-              {status?.grid_status === 1 ? '已并网' : '离网'}
+              {getGridStatusText(status?.grid_status)}
             </span>
           </div>
         </div>

@@ -134,6 +134,58 @@ export function getStatusColor(status: number, type: 'operation' | 'charge' | 'g
 }
 
 /**
+ * Get operation status text
+ * @param status operation_status value from database
+ * @returns '正常运行' | '停机'
+ */
+export function getOperationStatusText(status: number | null | undefined): string {
+  return status === 1 ? '正常运行' : '停机'
+}
+
+/**
+ * Get charge/discharge status text
+ * @param status charge_status value from database
+ * @returns '充电中' | '放电中' | '空闲'
+ */
+export function getChargeStatusText(status: number | null | undefined): string {
+  if (status === 1) return '充电中'
+  if (status === 2) return '放电中'
+  return '空闲'
+}
+
+/**
+ * Get grid connection status text
+ * @param status grid_status value from database
+ * @returns '已并网' | '离网'
+ */
+export function getGridStatusText(status: number | null | undefined): string {
+  return status === 1 ? '已并网' : '离网'
+}
+
+/**
+ * Status value to CSS class mapping
+ */
+export function getStatusClass(status: number, type: 'operation' | 'charge' | 'grid'): string {
+  const baseClass = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium'
+  const classMap = {
+    operation: {
+      1: 'bg-[var(--color-success)]/10 text-[var(--color-success)]',
+    },
+    charge: {
+      1: 'bg-[var(--color-info)]/10 text-[var(--color-info)]',
+      2: 'bg-[var(--color-success)]/10 text-[var(--color-success)]',
+    },
+    grid: {
+      1: 'bg-[var(--color-success)]/10 text-[var(--color-success)]',
+    },
+  }
+  const activeClass = classMap[type][status as keyof (typeof classMap)[typeof type]]
+  return activeClass
+    ? `${baseClass} ${activeClass}`
+    : `${baseClass} bg-[var(--color-bg-page)] text-[var(--color-text-secondary)]`
+}
+
+/**
  * Get alert level color
  */
 export function getAlertLevelColor(level: string): string {
