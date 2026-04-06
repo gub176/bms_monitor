@@ -331,7 +331,7 @@ const DeviceDetail: React.FC = () => {
               <div className="space-y-3">
                 <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
                   <Text type="secondary" className="text-xs block mb-2">
-                    运行状态
+                    运行状态：
                   </Text>
                   <Text strong className="text-sm" style={{ color: getAdvancedStatusColor(status?.operation_status, 'chargeDischarge') }}>
                     {getOperationStatusText(status?.operation_status)}
@@ -339,7 +339,7 @@ const DeviceDetail: React.FC = () => {
                 </div>
                 <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
                   <Text type="secondary" className="text-xs block mb-2">
-                    充放电状态
+                    充放电状态：
                   </Text>
                   <Text
                     strong
@@ -351,7 +351,7 @@ const DeviceDetail: React.FC = () => {
                 </div>
                 <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
                   <Text type="secondary" className="text-xs block mb-2">
-                    主接触器
+                    主接触器：
                   </Text>
                   <Text
                     strong
@@ -371,7 +371,7 @@ const DeviceDetail: React.FC = () => {
               <div className="space-y-3">
                 <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
                   <Text type="secondary" className="text-xs block mb-2">
-                    并网状态
+                    并网状态：
                   </Text>
                   <Text strong className="text-sm" style={{ color: getAdvancedStatusColor(status?.grid_status, 'gridConnection') }}>
                     {getGridStatusText(status?.grid_status)}
@@ -379,7 +379,7 @@ const DeviceDetail: React.FC = () => {
                 </div>
                 <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
                   <Text type="secondary" className="text-xs block mb-2">
-                    电网连接
+                    电网连接：
                   </Text>
                   <Text
                     strong
@@ -391,7 +391,7 @@ const DeviceDetail: React.FC = () => {
                 </div>
                 <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
                   <Text type="secondary" className="text-xs block mb-2">
-                    电池均衡
+                    电池均衡：
                   </Text>
                   <Text
                     strong
@@ -411,7 +411,7 @@ const DeviceDetail: React.FC = () => {
               <div className="space-y-3">
                 <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
                   <Text type="secondary" className="text-xs block mb-2">
-                    充放电
+                    充放电：
                   </Text>
                   <Text
                     strong
@@ -423,7 +423,7 @@ const DeviceDetail: React.FC = () => {
                 </div>
                 <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
                   <Text type="secondary" className="text-xs block mb-2">
-                    急停按钮
+                    急停按钮：
                   </Text>
                   <Text
                     strong
