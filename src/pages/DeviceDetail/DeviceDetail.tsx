@@ -149,6 +149,10 @@ const DeviceDetail: React.FC = () => {
     loading
   })
 
+  // 调试：检查 user_devices 表数据
+  console.log('Devices data:', devices)
+  console.log('Looking for deviceId:', deviceId, 'in devices:', devices.map(d => d.device_id))
+
   // 电芯数据 - 从真实遥测数据生成
   const cellData: CellData[] = telemetry?.cell_voltages?.map((voltage, index) => ({
     key: index.toString(),

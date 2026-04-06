@@ -133,7 +133,7 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
 
   // 获取最新遥测数据
   fetchTelemetry: async (deviceId: string) => {
-    set({ loading: true, error: null })
+    set({ loading: true })
 
     try {
       const { data, error } = await supabase
@@ -150,17 +150,19 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
           set({ loading: false })
           return
         }
-        throw error
+        // 500 错误或其他错误，静默处理，不影响页面显示
+        console.warn('Telemetry fetch error:', error.message)
+        set({ loading: false })
+        return
       }
 
       // 更新状态
       get().updateTelemetry(deviceId, data as Telemetry)
       set({ loading: false })
     } catch (err) {
-      set({
-        loading: false,
-        error: err instanceof Error ? err.message : '获取遥测数据失败',
-      })
+      // 静默处理错误，不影响页面显示
+      console.warn('Telemetry fetch failed:', err instanceof Error ? err.message : err)
+      set({ loading: false })
     }
   },
 
