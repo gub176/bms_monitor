@@ -251,15 +251,18 @@ export function getAdvancedStatusColor(
   status: number | null | undefined,
   type: 'chargeDischarge' | 'gridConnection' | 'contactor' | 'emergencyStop' | 'balancing'
 ): string {
-  const colors = {
+  const colors: Record<typeof type, Record<number, string> & { default?: string }> = {
     chargeDischarge: { 1: 'var(--color-info)', 2: 'var(--color-success)', 3: 'var(--color-text-tertiary)' },
     gridConnection: { 1: 'var(--color-success)', 2: 'var(--color-warning)', 3: 'var(--color-info)', 4: 'var(--color-error)' },
     contactor: { 1: 'var(--color-success)', 2: 'var(--color-text-tertiary)', 3: 'var(--color-warning)', 4: 'var(--color-error)' },
-    emergencyStop: { 1: 'var(--color-success)', default: 'var(--color-error)' },
+    emergencyStop: { 1: 'var(--color-success)', 0: 'var(--color-error)' },
     balancing: { 1: 'var(--color-info)', 2: 'var(--color-text-tertiary)', 3: 'var(--color-error)' },
   }
   const typeColors = colors[type]
-  return (status !== null && status !== undefined && typeColors[status as number]) || typeColors.default || 'var(--color-text-tertiary)'
+  if (status === null || status === undefined) {
+    return typeColors.default || 'var(--color-text-tertiary)'
+  }
+  return typeColors[status] || typeColors.default || 'var(--color-text-tertiary)'
 }
 
 /**

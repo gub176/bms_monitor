@@ -23,7 +23,7 @@ import {
 } from '@ant-design/icons'
 import { useDeviceStore } from '../../stores/deviceStore'
 import { useAlertStore } from '../../stores/alertStore'
-import { useTelemetryStore, getPowerState } from '../../stores/telemetryStore'
+import { useTelemetryStore } from '../../stores/telemetryStore'
 import {
   getOperationStatusText,
   getChargeStatusText,
@@ -76,8 +76,6 @@ const DeviceDetail: React.FC = () => {
   const {
     latestTelemetry,
     latestStatus,
-    loading: telemetryLoading,
-    error: telemetryError,
     fetchTelemetry,
     fetchStatus,
     subscribeToTelemetry,
