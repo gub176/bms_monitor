@@ -288,29 +288,25 @@ const DeviceDetail: React.FC = () => {
       {/* 头部信息卡片 - 紧凑两层布局 */}
       <Card className="energy-card" variant="borderless">
         {/* 第一层：设备信息 */}
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          {/* 左侧设备信息 */}
-          <div className="flex items-center gap-3 flex-1 min-w-0">
+        <div className="flex items-center gap-4">
+          {/* 设备信息 */}
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             <div
-              className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 device-logo-gradient"
+              className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 device-logo-gradient"
               aria-hidden="true"
             >
-              <ThunderboltOutlined className="text-white text-lg" />
+              <ThunderboltOutlined className="text-white text-base" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <Title level={4} className="!mb-0 !text-base">
-                  {device.manufacturer || 'BMS 设备'}
-                </Title>
+                <span className="font-mono text-sm">{device.device_id}</span>
                 <Badge
                   status={isOnline ? 'success' : 'default'}
                   text={isOnline ? '在线' : '离线'}
                 />
-                <span className="font-mono text-xs text-[var(--color-text-tertiary)]">{device.device_id}</span>
                 {deviceAlerts.length > 0 && (
-                  <span className="flex items-center gap-1 text-xs text-[var(--color-error)]">
-                    <ExclamationCircleOutlined aria-hidden="true" />
-                    {deviceAlerts.length} 个告警
+                  <span className="text-xs text-[var(--color-text-tertiary)]">
+                    （{deviceAlerts.length} 个告警）
                   </span>
                 )}
               </div>
