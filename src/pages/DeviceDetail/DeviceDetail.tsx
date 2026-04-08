@@ -295,14 +295,12 @@ const DeviceDetail: React.FC = () => {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-semibold text-sm">{device.manufacturer || 'BMS 设备'}</span>
-                <span className="text-[var(--color-text-tertiary)]">-</span>
-                <span className="font-mono text-sm">{device.device_id}</span>
-                <span className={`text-xs ${isOnline ? 'text-[var(--color-success)]' : 'text-[var(--color-text-tertiary)]'}`}>
+                <span className="font-bold text-base">{device.manufacturer || 'BMS 设备'} - {device.device_id}</span>
+                <span className={`text-xs font-medium ${isOnline ? 'text-[var(--color-success)]' : 'text-[var(--color-text-tertiary)]'}`}>
                   （{isOnline ? '在线' : '离线'}）
                 </span>
                 {deviceAlerts.length > 0 && (
-                  <span className="text-xs text-[var(--color-text-tertiary)]">
+                  <span className="text-xs font-medium text-[var(--color-error)]">
                     （{deviceAlerts.length} 个告警）
                   </span>
                 )}
