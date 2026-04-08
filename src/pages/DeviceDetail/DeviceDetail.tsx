@@ -9,16 +9,11 @@ import {
   Button,
   Progress,
   Table,
-  Badge,
   Skeleton,
 } from 'antd'
 import {
   ThunderboltOutlined,
-  WifiOutlined,
   HeatMapOutlined,
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-  ExclamationCircleOutlined,
   SafetyOutlined,
 } from '@ant-design/icons'
 import { useDeviceStore } from '../../stores/deviceStore'
@@ -28,7 +23,6 @@ import {
   getOperationStatusText,
   getChargeStatusText,
   getGridStatusText,
-  getStatusClass,
   getChargeDischargeStatusText,
   getGridConnectionStatusText,
   getMainContactorStatusText,
@@ -38,7 +32,7 @@ import {
 } from '../../utils/formatters'
 import { TEMPERATURE_THRESHOLDS } from '../../constants/device'
 
-const { Title, Text } = Typography
+const { Text } = Typography
 
 // 获取温度状态的实用函数
 const getTemperatureStatus = (temperature: number) => {
@@ -146,7 +140,9 @@ const DeviceDetail: React.FC = () => {
     devicesCount: devices.length,
     telemetryFound: !!telemetry,
     statusFound: !!status,
-    loading
+    loading,
+    telemetry,
+    status
   })
 
   // 调试：检查 user_devices 表数据
