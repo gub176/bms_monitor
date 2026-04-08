@@ -144,6 +144,12 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
         .limit(1)
         .single()
 
+      console.log('Telemetry fetch result:', {
+        deviceId,
+        hasData: !!data,
+        error: error ? { code: error.code, message: error.message } : null
+      })
+
       if (error) {
         if (error.code === 'PGRST116') {
           // 没有数据，不是错误
@@ -178,6 +184,12 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
         .order('received_at', { ascending: false })
         .limit(1)
         .single()
+
+      console.log('Status fetch result:', {
+        deviceId,
+        hasData: !!data,
+        error: error ? { code: error.code, message: error.message } : null
+      })
 
       if (error) {
         if (error.code === 'PGRST116') {
