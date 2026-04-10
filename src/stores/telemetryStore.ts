@@ -56,6 +56,9 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
   error: null,
   subscriptions: {},
 
+  // 定时刷新间隔 (毫秒)
+  refreshInterval: 5000,
+
   // 设置加载状态
   setLoading: (loading) => {
     set({ loading })
@@ -213,8 +216,11 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
 
     // 如果已经订阅，跳过
     if (subscriptions[deviceId]) {
+      console.log('Telemetry subscription already exists for:', deviceId)
       return
     }
+
+    console.log('Creating realtime subscription for:', deviceId)
 
     // 创建新的实时订阅
     const channel = supabase
@@ -228,14 +234,19 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
           filter: `device_id=eq.${deviceId}`,
         },
         (payload) => {
+          console.log('Realtime telemetry update:', payload)
           // 当有新遥测数据插入时，更新状态
           const newTelemetry = payload.new as Telemetry
           get().updateTelemetry(deviceId, newTelemetry)
         }
       )
       .subscribe((status) => {
+        console.log('Realtime subscription status:', status)
         if (status === 'CHANNEL_ERROR') {
+          console.error('Realtime channel error:', status)
           get().setError('Subscription failed')
+        } else if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to telemetry updates for:', deviceId)
         }
       })
 
