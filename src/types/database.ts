@@ -41,18 +41,18 @@ export interface Telemetry {
   device_id: string
   timestamp: string
   received_at: string
-  soc: number | null
-  soh: number | null
-  total_voltage: number | null
-  total_current: number | null
-  charge_power: number | null
-  discharge_power: number | null
-  temperature_max: number | null
-  temperature_min: number | null
+  soc?: number  // 已废弃，使用 data 字段
+  soh?: number  // 已废弃，使用 data 字段
+  total_voltage?: number  // 已废弃，使用 data 字段
+  total_current?: number  // 已废弃，使用 data 字段
+  charge_power?: number  // 已废弃，使用 data 字段
+  discharge_power?: number  // 已废弃，使用 data 字段
+  temperature_max?: number  // 已废弃，使用 data 字段
+  temperature_min?: number  // 已废弃，使用 data 字段
   cell_voltages: number[] | null
   cell_socs: number[] | null
   cell_temperatures: number[] | null
-  data: Json | null
+  data: Json | null  // 实际数据：01113001=SOC, 01114001=SOH, 01115001=总电压，等
 }
 
 // Status Types
@@ -61,13 +61,12 @@ export interface Status {
   timestamp: string
   received_at: string
   operation_status: number | null
-  charge_status: number | null
-  grid_status: number | null
-  charge_discharge_status: number | null
-  grid_connection_status: number | null
+  charge_discharge_status: number | null  // 0=静置，1=充电，2=放电，3=均衡
+  grid_connection_status: number | null  // 0=离网，1=并网
   main_contactor_status: number | null
   emergency_stop_status: number | null
   battery_balancing_status: number | null
+  // 已废弃字段：charge_status, grid_status - 使用上面的字段替代
 }
 
 // Alert Types

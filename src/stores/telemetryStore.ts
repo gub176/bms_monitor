@@ -136,34 +136,31 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
     set({ loading: true })
 
     try {
+      // 使用 limit(1) 而不是 single() 避免超时问题
       const { data, error } = await supabase
         .from('telemetry')
         .select('*')
         .eq('device_id', deviceId)
         .order('received_at', { ascending: false })
         .limit(1)
-        .single()
 
       console.log('Telemetry fetch result:', {
         deviceId,
-        hasData: !!data,
+        count: data?.length,
         error: error ? { code: error.code, message: error.message } : null
       })
 
       if (error) {
-        if (error.code === 'PGRST116') {
-          // 没有数据，不是错误
-          set({ loading: false })
-          return
-        }
-        // 500 错误或其他错误，静默处理，不影响页面显示
         console.warn('Telemetry fetch error:', error.message)
         set({ loading: false })
         return
       }
 
-      // 更新状态
-      get().updateTelemetry(deviceId, data as Telemetry)
+      if (data && data.length > 0) {
+        // 更新状态
+        get().updateTelemetry(deviceId, data[0] as Telemetry)
+      }
+
       set({ loading: false })
     } catch (err) {
       // 静默处理错误，不影响页面显示
@@ -283,11 +280,38 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
 // 辅助选择器函数
 // ============================================
 
-// 计算平均电芯电压
+// 从 data JSON 字段提取遥测值
+export const extractTelemetryData = (telemetry: Telemetry | null) => {
+  if (!telemetry?.data) return null;
+
+  const d = telemetry.data as Record<string, number>;
+
+  // 温度从 cell_temperatures 数组计算最大/最小值 (单位：0.1°C -> °C)
+  const temperatures = telemetry.cell_temperatures || [];
+  const tempMax = temperatures.length > 0 ? Math.max(...temperatures) / 10 : null;
+  const tempMin = temperatures.length > 0 ? Math.min(...temperatures) / 10 : null;
+
+  // SOH: 原始值 - 50 = 实际百分比 (例如：140 - 50 = 90%)
+  const sohRaw = d?.['01114001'] || 0;
+  const soh = sohRaw > 50 ? sohRaw - 50 : sohRaw;
+
+  return {
+    soc: d?.['01113001'] ? d['01113001'] / 10 : null,
+    soh: soh > 0 ? soh : null,
+    total_voltage: d?.['01115001'] ? d['01115001'] / 100 : null,
+    total_current: d?.['01116001'] ? d['01116001'] / 10 : null,
+    charge_power: d?.['01118001'] ? d['01118001'] : null,
+    discharge_power: d?.['01120001'] ? d['01120001'] : null,
+    temperature_max: tempMax,
+    temperature_min: tempMin,
+  };
+};
+
+// 计算平均电芯电压 (mV -> V)
 export const getAverageCellVoltage = (telemetry: Telemetry | null): number | null => {
   if (!telemetry?.cell_voltages || telemetry.cell_voltages.length === 0) return null
   const sum = telemetry.cell_voltages.reduce((acc, v) => acc + v, 0)
-  return Number((sum / telemetry.cell_voltages.length).toFixed(3))
+  return Number((sum / telemetry.cell_voltages.length / 1000).toFixed(3))
 }
 
 // 获取最大电芯电压

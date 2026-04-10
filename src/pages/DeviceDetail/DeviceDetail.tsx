@@ -10,6 +10,7 @@ import {
   Progress,
   Table,
   Skeleton,
+  Badge,
 } from 'antd'
 import {
   ThunderboltOutlined,
@@ -21,8 +22,6 @@ import { useAlertStore } from '../../stores/alertStore'
 import { useTelemetryStore } from '../../stores/telemetryStore'
 import {
   getOperationStatusText,
-  getChargeStatusText,
-  getGridStatusText,
   getChargeDischargeStatusText,
   getGridConnectionStatusText,
   getMainContactorStatusText,
@@ -30,6 +29,7 @@ import {
   getBatteryBalancingStatusText,
   getAdvancedStatusColor,
 } from '../../utils/formatters'
+import { extractTelemetryData } from '../../stores/telemetryStore'
 import { TEMPERATURE_THRESHOLDS } from '../../constants/device'
 
 const { Text } = Typography
@@ -133,6 +133,9 @@ const DeviceDetail: React.FC = () => {
   const telemetry = latestTelemetry[deviceId!] || null
   const status = latestStatus[deviceId!] || null
 
+  // 从 data JSON 字段提取遥测数据
+  const extractedTelemetry = extractTelemetryData(telemetry)
+
   // 调试日志
   console.log('DeviceDetail:', {
     deviceId,
@@ -150,12 +153,15 @@ const DeviceDetail: React.FC = () => {
   console.log('Looking for deviceId:', deviceId, 'in devices:', devices.map(d => d.device_id))
 
   // 电芯数据 - 从真实遥测数据生成
-  const cellData: CellData[] = telemetry?.cell_voltages?.map((voltage, index) => ({
+  // 数据库单位：cell_voltages(mV), cell_socs(%), cell_temperatures(0.1°C)
+  const cellData: CellData[] = telemetry?.cell_voltages?.map((voltageMv, index) => ({
     key: index.toString(),
     index: index + 1,
-    voltage,
-    soc: telemetry?.cell_socs?.[index] || 75 + Math.random() * 5,
-    temperature: telemetry?.cell_temperatures?.[index % (telemetry?.cell_temperatures?.length || 1)] || 28 + Math.random() * 4,
+    voltage: voltageMv / 1000, // mV -> V
+    soc: telemetry?.cell_socs?.[index] ? telemetry.cell_socs[index] / 10 : 75, // 实际值/10 = 百分比
+    temperature: telemetry?.cell_temperatures?.[index % (telemetry?.cell_temperatures?.length || 1)]
+      ? telemetry.cell_temperatures[index % telemetry.cell_temperatures.length] / 10
+      : 25, // 0.1°C -> °C
   })) || []
 
   const cellColumns = [
@@ -296,13 +302,17 @@ const DeviceDetail: React.FC = () => {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-bold text-base">{device.manufacturer || 'BMS 设备'} - {device.device_id}</span>
-                <span className={`text-xs font-medium ${isOnline ? 'text-[var(--color-success)]' : 'text-[var(--color-text-tertiary)]'}`}>
-                  （{isOnline ? '在线' : '离线'}）
-                </span>
+                <Badge
+                  color={isOnline ? 'green' : 'default'}
+                  text={<span className="font-bold">{isOnline ? '在线' : '离线'}</span>}
+                  className="text-xs"
+                />
                 {deviceAlerts.length > 0 && (
-                  <span className="text-xs font-medium text-[var(--color-error)]">
-                    （{deviceAlerts.length} 个告警）
-                  </span>
+                  <Badge
+                    color="red"
+                    text={<span className="font-bold">{deviceAlerts.length} 个告警</span>}
+                    className="text-xs"
+                  />
                 )}
               </div>
             </div>
@@ -362,8 +372,8 @@ const DeviceDetail: React.FC = () => {
                   <Text type="secondary" className="text-xs block mb-2">
                     并网状态：
                   </Text>
-                  <Text strong className="text-sm" style={{ color: getAdvancedStatusColor(status?.grid_status, 'gridConnection') }}>
-                    {getGridStatusText(status?.grid_status)}
+                  <Text strong className="text-sm" style={{ color: getAdvancedStatusColor(status?.grid_connection_status, 'gridConnection') }}>
+                    {getGridConnectionStatusText(status?.grid_connection_status)}
                   </Text>
                 </div>
                 <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
@@ -405,9 +415,9 @@ const DeviceDetail: React.FC = () => {
                   <Text
                     strong
                     className="text-sm"
-                    style={{ color: getAdvancedStatusColor(status?.charge_status, 'chargeDischarge') }}
+                    style={{ color: getAdvancedStatusColor(status?.charge_discharge_status, 'chargeDischarge') }}
                   >
-                    {getChargeStatusText(status?.charge_status)}
+                    {getChargeDischargeStatusText(status?.charge_discharge_status)}
                   </Text>
                 </div>
                 <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-page)' }}>
@@ -440,11 +450,11 @@ const DeviceDetail: React.FC = () => {
                 <ThunderboltOutlined className="text-[var(--color-primary)]" aria-hidden="true" />
               </div>
               <div className="text-3xl font-bold text-[var(--color-text-primary)]">
-                {telemetry?.soc ? telemetry.soc.toFixed(1) : '--'}%
+                {extractedTelemetry?.soc ? extractedTelemetry.soc.toFixed(1) : '--'}%
               </div>
-              {telemetry?.soc && (
+              {extractedTelemetry?.soc && (
                 <Progress
-                  percent={Math.round(telemetry.soc)}
+                  percent={Math.round(extractedTelemetry.soc)}
                   strokeColor={{ '0%': 'var(--color-primary)', '100%': 'var(--color-success)' }}
                   showInfo={false}
                   size="small"
@@ -464,7 +474,7 @@ const DeviceDetail: React.FC = () => {
                 <ThunderboltOutlined className="text-[var(--color-success)]" aria-hidden="true" />
               </div>
               <div className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)]">
-                {telemetry?.total_voltage ? telemetry.total_voltage.toFixed(1) : '--'}
+                {extractedTelemetry?.total_voltage ? extractedTelemetry.total_voltage.toFixed(1) : '--'}
                 <span className="text-sm text-[var(--color-text-tertiary)] ml-1">V</span>
               </div>
               <div className="flex items-center gap-2">
@@ -472,7 +482,7 @@ const DeviceDetail: React.FC = () => {
                   总电流
                 </Text>
                 <Text strong className="text-sm ml-auto">
-                  {telemetry?.total_current ? telemetry.total_current.toFixed(1) : '--'} A
+                  {extractedTelemetry?.total_current ? extractedTelemetry.total_current.toFixed(1) : '--'} A
                 </Text>
               </div>
             </div>
@@ -489,11 +499,11 @@ const DeviceDetail: React.FC = () => {
                 <SafetyOutlined className="text-[var(--color-info)]" aria-hidden="true" />
               </div>
               <div className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)]">
-                {telemetry?.soh ? telemetry.soh.toFixed(1) : '--'}%
+                {extractedTelemetry?.soh ? extractedTelemetry.soh.toFixed(1) : '--'}%
               </div>
-              {telemetry?.soh && (
+              {extractedTelemetry?.soh && (
                 <Progress
-                  percent={Math.round(telemetry.soh)}
+                  percent={Math.round(extractedTelemetry.soh)}
                   strokeColor="var(--color-info)"
                   showInfo={false}
                   size="small"
@@ -513,16 +523,16 @@ const DeviceDetail: React.FC = () => {
                 <HeatMapOutlined className="text-[var(--color-warning)]" aria-hidden="true" />
               </div>
               <div className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)]">
-                {telemetry?.temperature_max ?? '--'}°C
+                {extractedTelemetry?.temperature_max ?? '--'}°C
                 <span className="text-sm text-[var(--color-text-tertiary)] mx-2">~</span>
-                {telemetry?.temperature_min ?? '--'}°C
+                {extractedTelemetry?.temperature_min ?? '--'}°C
               </div>
               <div className="flex items-center gap-2">
                 <Text type="secondary" className="text-xs">
-                  最高 {telemetry?.temperature_max ?? '--'}°C
+                  最高 {extractedTelemetry?.temperature_max ?? '--'}°C
                 </Text>
                 <Text type="secondary" className="text-xs ml-auto">
-                  最低 {telemetry?.temperature_min ?? '--'}°C
+                  最低 {extractedTelemetry?.temperature_min ?? '--'}°C
                 </Text>
               </div>
             </div>
@@ -550,7 +560,7 @@ const DeviceDetail: React.FC = () => {
                     充电功率
                   </Text>
                   <Text strong className="text-xl md:text-2xl text-[var(--color-primary)]">
-                    {telemetry?.charge_power ? (telemetry.charge_power / 1000).toFixed(2) : '0.00'} kW
+                    {extractedTelemetry?.charge_power ? (extractedTelemetry.charge_power / 1000).toFixed(2) : '0.00'} kW
                   </Text>
                 </div>
               </Col>
@@ -560,7 +570,7 @@ const DeviceDetail: React.FC = () => {
                     放电功率
                   </Text>
                   <Text strong className="text-xl md:text-2xl text-[var(--color-success)]">
-                    {telemetry?.discharge_power ? (telemetry.discharge_power / 1000).toFixed(2) : '0.00'} kW
+                    {extractedTelemetry?.discharge_power ? (extractedTelemetry.discharge_power / 1000).toFixed(2) : '0.00'} kW
                   </Text>
                 </div>
               </Col>
