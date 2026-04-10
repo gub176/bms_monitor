@@ -118,14 +118,13 @@ const DeviceDetail: React.FC = () => {
     // 订阅实时更新
     subscribeToTelemetry(deviceId)
 
-    // 定时刷新 (每 5 秒)
+    // 定时刷新 (每 30 秒) - 作为 Realtime 的兜底机制
     const refreshInterval = setInterval(() => {
-      console.log('Refreshing telemetry data...')
       fetchTelemetry(deviceId)
       fetchStatus(deviceId)
-    }, 5000)
+    }, 30000)
 
-    // 清理函数：组件卸载或 deviceId 变化时取消订阅
+    // 清理函数
     return () => {
       if (deviceId) {
         unsubscribeFromTelemetry(deviceId)
