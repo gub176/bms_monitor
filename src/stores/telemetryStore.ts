@@ -109,7 +109,7 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
     set({ loading: true })
 
     try {
-      // 使用 limit(1) 而不是 single() 避免超时问题
+      // 查询所有字段，包括 data JSON
       const { data, error } = await supabase
         .from('telemetry')
         .select('*')
