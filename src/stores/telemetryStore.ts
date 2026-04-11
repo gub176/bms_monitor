@@ -177,54 +177,75 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
 export const extractTelemetryData = (telemetry: Telemetry | null) => {
   if (!telemetry?.data) return null;
 
-  const d = telemetry.data as Record<string, number>;
+  try {
+    const d = telemetry.data as Record<string, number>;
 
-  // 温度从 cell_temperatures 数组计算最大/最小值 (单位：0.1°C -> °C)
-  const temperatures = telemetry.cell_temperatures || [];
-  const tempMax = temperatures.length > 0 ? Math.max(...temperatures) / 10 : null;
-  const tempMin = temperatures.length > 0 ? Math.min(...temperatures) / 10 : null;
+    // 温度从 cell_temperatures 数组计算最大/最小值 (单位：0.1°C -> °C)
+    const temperatures = telemetry.cell_temperatures || [];
+    const tempMax = temperatures.length > 0 ? Math.max(...temperatures) / 10 : null;
+    const tempMin = temperatures.length > 0 ? Math.min(...temperatures) / 10 : null;
 
-  // SOH: 原始值 / 10 = 实际百分比 (例如：214 / 10 = 21.4%)
-  const sohRaw = d?.['01114001'] || 0;
-  const soh = sohRaw / 10;
+    // SOH: 原始值 / 10 = 实际百分比 (例如：214 / 10 = 21.4%)
+    const sohRaw = d?.['01114001'] || 0;
+    const soh = sohRaw / 10;
 
-  return {
-    soc: d?.['01113001'] ? d['01113001'] / 10 : null,
-    soh: soh > 0 ? soh : null,
-    total_voltage: d?.['01115001'] ? d['01115001'] / 100 : null,
-    total_current: d?.['01116001'] ? d['01116001'] / 10 : null,
-    charge_power: d?.['01118001'] ? d['01118001'] : null,
-    discharge_power: d?.['01120001'] ? d['01120001'] : null,
-    temperature_max: tempMax,
-    temperature_min: tempMin,
-  };
+    return {
+      soc: d?.['01113001'] ? d['01113001'] / 10 : null,
+      soh: soh > 0 ? soh : null,
+      total_voltage: d?.['01115001'] ? d['01115001'] / 100 : null,
+      total_current: d?.['01116001'] ? d['01116001'] / 10 : null,
+      charge_power: d?.['01118001'] ? d['01118001'] : null,
+      discharge_power: d?.['01120001'] ? d['01120001'] : null,
+      temperature_max: tempMax,
+      temperature_min: tempMin,
+    };
+  } catch {
+    // 数据解析失败时返回 null
+    return null;
+  }
 };
 
 // 计算平均电芯电压 (mV -> V)
 export const getAverageCellVoltage = (telemetry: Telemetry | null): number | null => {
   if (!telemetry?.cell_voltages || telemetry.cell_voltages.length === 0) return null
-  const sum = telemetry.cell_voltages.reduce((acc, v) => acc + v, 0)
-  return Number((sum / telemetry.cell_voltages.length / 1000).toFixed(3))
+  try {
+    const sum = telemetry.cell_voltages.reduce((acc, v) => acc + v, 0)
+    return Number((sum / telemetry.cell_voltages.length / 1000).toFixed(3))
+  } catch {
+    return null
+  }
 }
 
 // 获取最大电芯电压
 export const getMaxCellVoltage = (telemetry: Telemetry | null): number | null => {
   if (!telemetry?.cell_voltages || telemetry.cell_voltages.length === 0) return null
-  return Math.max(...telemetry.cell_voltages)
+  try {
+    return Math.max(...telemetry.cell_voltages)
+  } catch {
+    return null
+  }
 }
 
 // 获取最小电芯电压
 export const getMinCellVoltage = (telemetry: Telemetry | null): number | null => {
   if (!telemetry?.cell_voltages || telemetry.cell_voltages.length === 0) return null
-  return Math.min(...telemetry.cell_voltages)
+  try {
+    return Math.min(...telemetry.cell_voltages)
+  } catch {
+    return null
+  }
 }
 
 // 计算电芯压差
 export const getCellVoltageDelta = (telemetry: Telemetry | null): number | null => {
   if (!telemetry?.cell_voltages || telemetry.cell_voltages.length < 2) return null
-  const max = Math.max(...telemetry.cell_voltages)
-  const min = Math.min(...telemetry.cell_voltages)
-  return Number((max - min).toFixed(3))
+  try {
+    const max = Math.max(...telemetry.cell_voltages)
+    const min = Math.min(...telemetry.cell_voltages)
+    return Number((max - min).toFixed(3))
+  } catch {
+    return null
+  }
 }
 
 // 判断充放电状态
@@ -238,6 +259,10 @@ export const getPowerState = (telemetry: Telemetry | null): 'charging' | 'discha
 // 获取电芯平均温度
 export const getAverageCellTemperature = (telemetry: Telemetry | null): number | null => {
   if (!telemetry?.cell_temperatures || telemetry.cell_temperatures.length === 0) return null
-  const sum = telemetry.cell_temperatures.reduce((acc, t) => acc + t, 0)
-  return Number((sum / telemetry.cell_temperatures.length).toFixed(1))
+  try {
+    const sum = telemetry.cell_temperatures.reduce((acc, t) => acc + t, 0)
+    return Number((sum / telemetry.cell_temperatures.length).toFixed(1))
+  } catch {
+    return null
+  }
 }

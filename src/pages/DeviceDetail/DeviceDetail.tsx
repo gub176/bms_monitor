@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   Card,
@@ -75,6 +75,7 @@ const DeviceDetail: React.FC = () => {
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [refreshCountdown, setRefreshCountdown] = useState(30)
 
   // 获取设备详情和告警数据
   useEffect(() => {
@@ -108,21 +109,31 @@ const DeviceDetail: React.FC = () => {
   useEffect(() => {
     if (!deviceId) return
 
-    // 获取初始数据
-    fetchTelemetry(deviceId)
-    fetchStatus(deviceId)
-
-    // 定时刷新 (每 30 秒)
-    const refreshInterval = setInterval(() => {
+    const refreshData = () => {
       fetchTelemetry(deviceId)
       fetchStatus(deviceId)
-    }, 30000)
+      setRefreshCountdown(30)
+    }
+
+    // 获取初始数据
+    refreshData()
+
+    // 倒计时器
+    const countdownInterval = setInterval(() => {
+      setRefreshCountdown((prev) => {
+        if (prev <= 1) {
+          refreshData()
+          return 30
+        }
+        return prev - 1
+      })
+    }, 1000)
 
     // 清理函数
     return () => {
-      clearInterval(refreshInterval)
+      clearInterval(countdownInterval)
     }
-  }, [deviceId])
+  }, [deviceId, fetchTelemetry, fetchStatus])
 
   const device = devices.find((d) => d.device_id === deviceId)
   const deviceAlerts = activeAlerts.filter((a) => a.device_id === deviceId)
@@ -134,33 +145,19 @@ const DeviceDetail: React.FC = () => {
   // 从 data JSON 字段提取遥测数据
   const extractedTelemetry = extractTelemetryData(telemetry)
 
-  // 调试日志
-  console.log('DeviceDetail:', {
-    deviceId,
-    deviceFound: !!device,
-    devicesCount: devices.length,
-    telemetryFound: !!telemetry,
-    statusFound: !!status,
-    loading,
-    telemetry,
-    status
-  })
-
-  // 调试：检查 user_devices 表数据
-  console.log('Devices data:', devices)
-  console.log('Looking for deviceId:', deviceId, 'in devices:', devices.map(d => d.device_id))
-
-  // 电芯数据 - 从真实遥测数据生成
-  // 数据库单位：cell_voltages(mV), cell_socs(%), cell_temperatures(0.1°C)
-  const cellData: CellData[] = telemetry?.cell_voltages?.map((voltageMv, index) => ({
-    key: index.toString(),
-    index: index + 1,
-    voltage: voltageMv / 1000, // mV -> V
-    soc: telemetry?.cell_socs?.[index] ? telemetry.cell_socs[index] / 10 : 75, // 实际值/10 = 百分比
-    temperature: telemetry?.cell_temperatures?.[index % (telemetry?.cell_temperatures?.length || 1)]
-      ? telemetry.cell_temperatures[index % telemetry.cell_temperatures.length] / 10
-      : 25, // 0.1°C -> °C
-  })) || []
+  // 电芯数据 - 使用 useMemo 缓存计算结果
+  const cellData: CellData[] = useMemo(() => {
+    if (!telemetry?.cell_voltages) return []
+    return telemetry.cell_voltages.map((voltageMv, index) => ({
+      key: index.toString(),
+      index: index + 1,
+      voltage: voltageMv / 1000,
+      soc: telemetry?.cell_socs?.[index] ? telemetry.cell_socs[index] / 10 : 75,
+      temperature: telemetry?.cell_temperatures?.[index % (telemetry?.cell_temperatures?.length || 1)]
+        ? telemetry.cell_temperatures[index % telemetry.cell_temperatures.length] / 10
+        : 25,
+    }))
+  }, [telemetry?.cell_voltages, telemetry?.cell_socs, telemetry?.cell_temperatures])
 
   const cellColumns = [
     {
@@ -291,12 +288,6 @@ const DeviceDetail: React.FC = () => {
         <div className="flex items-center gap-4">
           {/* 设备信息 */}
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 device-logo-gradient"
-              aria-hidden="true"
-            >
-              <ThunderboltOutlined className="text-white text-base" />
-            </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-bold text-base">{device.manufacturer || 'BMS 设备'} - {device.device_id}</span>
@@ -314,6 +305,19 @@ const DeviceDetail: React.FC = () => {
                 )}
               </div>
             </div>
+          </div>
+
+          {/* 倒计时 */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Progress
+              type="circle"
+              percent={(refreshCountdown / 30) * 100}
+              size={40}
+              strokeColor={refreshCountdown <= 5 ? 'var(--color-warning)' : 'var(--color-primary)'}
+              format={() => (
+                <span className="text-xs font-mono">{refreshCountdown}s</span>
+              )}
+            />
           </div>
         </div>
 

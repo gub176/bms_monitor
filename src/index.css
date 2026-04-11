@@ -578,6 +578,22 @@ body {
   background: var(--color-error);
 }
 
+/* =========================================
+   动画效果
+   ========================================= */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
 /* Alert severity row highlight */
 .severity-row-highlight > td {
   background: linear-gradient(to right, rgba(255, 77, 79, 0.04) 0%, rgba(255, 77, 79, 0.02) 100%) !important;
