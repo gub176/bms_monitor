@@ -304,9 +304,9 @@ export const extractTelemetryData = (telemetry: Telemetry | null) => {
   const tempMax = temperatures.length > 0 ? Math.max(...temperatures) / 10 : null;
   const tempMin = temperatures.length > 0 ? Math.min(...temperatures) / 10 : null;
 
-  // SOH: 原始值 - 50 = 实际百分比 (例如：140 - 50 = 90%)
+  // SOH: 原始值 / 10 = 实际百分比 (例如：214 / 10 = 21.4%)
   const sohRaw = d?.['01114001'] || 0;
-  const soh = sohRaw > 50 ? sohRaw - 50 : sohRaw;
+  const soh = sohRaw / 10;
 
   console.log('SOH raw value:', sohRaw, 'calculated:', soh);
 
