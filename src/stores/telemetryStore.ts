@@ -297,6 +297,8 @@ export const extractTelemetryData = (telemetry: Telemetry | null) => {
 
   const d = telemetry.data as Record<string, number>;
 
+  console.log('Telemetry data field:', d);
+
   // 温度从 cell_temperatures 数组计算最大/最小值 (单位：0.1°C -> °C)
   const temperatures = telemetry.cell_temperatures || [];
   const tempMax = temperatures.length > 0 ? Math.max(...temperatures) / 10 : null;
@@ -305,6 +307,8 @@ export const extractTelemetryData = (telemetry: Telemetry | null) => {
   // SOH: 原始值 - 50 = 实际百分比 (例如：140 - 50 = 90%)
   const sohRaw = d?.['01114001'] || 0;
   const soh = sohRaw > 50 ? sohRaw - 50 : sohRaw;
+
+  console.log('SOH raw value:', sohRaw, 'calculated:', soh);
 
   return {
     soc: d?.['01113001'] ? d['01113001'] / 10 : null,
