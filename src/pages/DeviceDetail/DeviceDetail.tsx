@@ -19,7 +19,7 @@ import {
 } from '@ant-design/icons'
 import { useDeviceStore } from '../../stores/deviceStore'
 import { useAlertStore } from '../../stores/alertStore'
-import { useTelemetryStore } from '../../stores/telemetryStore'
+import { useTelemetryStore, extractTelemetryData } from '../../stores/telemetryStore'
 import {
   getOperationStatusText,
   getChargeDischargeStatusText,
@@ -29,7 +29,6 @@ import {
   getBatteryBalancingStatusText,
   getAdvancedStatusColor,
 } from '../../utils/formatters'
-import { extractTelemetryData } from '../../stores/telemetryStore'
 import { TEMPERATURE_THRESHOLDS } from '../../constants/device'
 
 const { Text } = Typography
@@ -72,8 +71,6 @@ const DeviceDetail: React.FC = () => {
     latestStatus,
     fetchTelemetry,
     fetchStatus,
-    subscribeToTelemetry,
-    unsubscribeFromTelemetry,
   } = useTelemetryStore()
 
   const [loading, setLoading] = useState(true)
@@ -107,7 +104,7 @@ const DeviceDetail: React.FC = () => {
     }
   }, [deviceId])
 
-  // 获取遥测数据并订阅实时更新
+  // 获取遥测数据并定时刷新
   useEffect(() => {
     if (!deviceId) return
 
@@ -115,10 +112,7 @@ const DeviceDetail: React.FC = () => {
     fetchTelemetry(deviceId)
     fetchStatus(deviceId)
 
-    // 订阅实时更新
-    subscribeToTelemetry(deviceId)
-
-    // 定时刷新 (每 30 秒) - 作为 Realtime 的兜底机制
+    // 定时刷新 (每 30 秒)
     const refreshInterval = setInterval(() => {
       fetchTelemetry(deviceId)
       fetchStatus(deviceId)
@@ -126,9 +120,6 @@ const DeviceDetail: React.FC = () => {
 
     // 清理函数
     return () => {
-      if (deviceId) {
-        unsubscribeFromTelemetry(deviceId)
-      }
       clearInterval(refreshInterval)
     }
   }, [deviceId])

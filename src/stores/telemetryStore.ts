@@ -2,17 +2,6 @@ import { create } from 'zustand'
 import { supabase } from '../lib/supabaseClient'
 import type { Telemetry, Status } from '../types/database'
 
-// 实时订阅通道类型
-interface RealtimeChannel {
-  on: (
-    event: string,
-    filter: { event: string; schema: string; table: string; filter?: string },
-    callback: Function
-  ) => RealtimeChannel
-  subscribe: (callback: (status: 'SUBSCRIBED' | 'CHANNEL_ERROR' | string) => void) => RealtimeChannel
-  unsubscribe: (callback?: () => void) => void
-}
-
 export interface TelemetryState {
   // 数据状态 - 支持多设备
   latestTelemetry: Record<string, Telemetry> // key: deviceId
@@ -22,9 +11,6 @@ export interface TelemetryState {
   // UI 状态
   loading: boolean
   error: string | null
-
-  // 实时订阅 - 每个设备一个订阅
-  subscriptions: Record<string, RealtimeChannel> // key: deviceId
 
   // Actions - 数据更新
   updateTelemetry: (deviceId: string, data: Telemetry) => void
@@ -36,11 +22,6 @@ export interface TelemetryState {
   // Actions - 数据获取
   fetchTelemetry: (deviceId: string) => Promise<void>
   fetchStatus: (deviceId: string) => Promise<void>
-
-  // Actions - 实时订阅
-  subscribeToTelemetry: (deviceId: string) => void
-  unsubscribeFromTelemetry: (deviceId: string) => void
-  unsubscribeAll: () => void
 
   // Actions - UI 状态
   setLoading: (loading: boolean) => void
@@ -54,10 +35,6 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
   telemetryHistory: {},
   loading: false,
   error: null,
-  subscriptions: {},
-
-  // 定时刷新间隔 (毫秒)
-  refreshInterval: 5000,
 
   // 设置加载状态
   setLoading: (loading) => {
@@ -103,9 +80,6 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
 
   // 清除单个设备数据
   clearDeviceData: (deviceId) => {
-    // 先取消该设备的订阅
-    get().unsubscribeFromTelemetry(deviceId)
-
     set((state) => {
       const { [deviceId]: removedTelemetry, ...remainingTelemetry } = state.latestTelemetry
       const { [deviceId]: removedStatus, ...remainingStatus } = state.latestStatus
@@ -121,16 +95,12 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
 
   // 清除所有数据
   clearAllData: () => {
-    // 取消所有订阅
-    get().unsubscribeAll()
-
     set({
       latestTelemetry: {},
       latestStatus: {},
       telemetryHistory: {},
       loading: false,
       error: null,
-      subscriptions: {},
     })
   },
 
@@ -146,12 +116,6 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
         .eq('device_id', deviceId)
         .order('received_at', { ascending: false })
         .limit(1)
-
-      console.log('Telemetry fetch result:', {
-        deviceId,
-        count: data?.length,
-        error: error ? { code: error.code, message: error.message } : null
-      })
 
       if (error) {
         console.warn('Telemetry fetch error:', error.message)
@@ -185,12 +149,6 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
         .limit(1)
         .single()
 
-      console.log('Status fetch result:', {
-        deviceId,
-        hasData: !!data,
-        error: error ? { code: error.code, message: error.message } : null
-      })
-
       if (error) {
         if (error.code === 'PGRST116') {
           set({ loading: false })
@@ -209,82 +167,6 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
       })
     }
   },
-
-  // 订阅实时遥测数据
-  subscribeToTelemetry: (deviceId: string) => {
-    const subscriptions = get().subscriptions
-
-    // 如果已经订阅，跳过
-    if (subscriptions[deviceId]) {
-      console.log('Telemetry subscription already exists for:', deviceId)
-      return
-    }
-
-    console.log('Creating realtime subscription for:', deviceId)
-
-    // 创建新的实时订阅
-    const channel = supabase
-      .channel(`realtime:telemetry:${deviceId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'telemetry',
-          filter: `device_id=eq.${deviceId}`,
-        },
-        (payload) => {
-          console.log('Realtime telemetry update:', payload)
-          // 当有新遥测数据插入时，更新状态
-          const newTelemetry = payload.new as Telemetry
-          get().updateTelemetry(deviceId, newTelemetry)
-        }
-      )
-      .subscribe((status) => {
-        console.log('Realtime subscription status:', status)
-        if (status === 'CHANNEL_ERROR') {
-          console.error('Realtime channel error:', status)
-          get().setError('Subscription failed')
-        } else if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to telemetry updates for:', deviceId)
-        }
-      })
-
-    set((state) => ({
-      subscriptions: {
-        ...state.subscriptions,
-        [deviceId]: channel as unknown as RealtimeChannel,
-      },
-    }))
-  },
-
-  // 取消单个设备的订阅
-  unsubscribeFromTelemetry: (deviceId: string) => {
-    const subscriptions = get().subscriptions
-    const subscription = subscriptions[deviceId]
-
-    if (subscription) {
-      subscription.unsubscribe()
-
-      set((state) => {
-        const { [deviceId]: removed, ...remaining } = state.subscriptions
-        return { subscriptions: remaining }
-      })
-    }
-  },
-
-  // 取消所有订阅
-  unsubscribeAll: () => {
-    const subscriptions = get().subscriptions
-
-    Object.values(subscriptions).forEach((subscription) => {
-      if (subscription && typeof subscription.unsubscribe === 'function') {
-        subscription.unsubscribe()
-      }
-    })
-
-    set({ subscriptions: {} })
-  },
 }))
 
 // ============================================
@@ -297,8 +179,6 @@ export const extractTelemetryData = (telemetry: Telemetry | null) => {
 
   const d = telemetry.data as Record<string, number>;
 
-  console.log('Telemetry data field:', d);
-
   // 温度从 cell_temperatures 数组计算最大/最小值 (单位：0.1°C -> °C)
   const temperatures = telemetry.cell_temperatures || [];
   const tempMax = temperatures.length > 0 ? Math.max(...temperatures) / 10 : null;
@@ -307,8 +187,6 @@ export const extractTelemetryData = (telemetry: Telemetry | null) => {
   // SOH: 原始值 / 10 = 实际百分比 (例如：214 / 10 = 21.4%)
   const sohRaw = d?.['01114001'] || 0;
   const soh = sohRaw / 10;
-
-  console.log('SOH raw value:', sohRaw, 'calculated:', soh);
 
   return {
     soc: d?.['01113001'] ? d['01113001'] / 10 : null,
