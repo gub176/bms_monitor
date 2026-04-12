@@ -72,8 +72,6 @@ const DeviceDetail: React.FC = () => {
     fetchTelemetry,
     fetchStatus,
     subscribeToDevice,
-    unsubscribeFromDevice,
-    realtimeConnected,
     syncMode,
   } = useTelemetryStore()
 

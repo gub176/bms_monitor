@@ -41,7 +41,7 @@ export interface TelemetryState {
 
 // 存储 Realtime 频道引用 - 每设备独立管理
 const realtimeChannels: Map<string, any> = new Map()
-const pollingTimers: Map<string, NodeJS.Timeout> = new Map()
+const pollingTimers: Map<string, ReturnType<typeof setInterval>> = new Map()
 const POLL_INTERVAL = 30000 // 30 秒
 
 export const useTelemetryStore = create<TelemetryState>((set, get) => ({
