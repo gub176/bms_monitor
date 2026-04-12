@@ -71,6 +71,10 @@ const DeviceDetail: React.FC = () => {
     latestStatus,
     fetchTelemetry,
     fetchStatus,
+    subscribeToDevice,
+    unsubscribeFromDevice,
+    realtimeConnected,
+    syncMode,
   } = useTelemetryStore()
 
   const [loading, setLoading] = useState(true)
@@ -105,24 +109,24 @@ const DeviceDetail: React.FC = () => {
     }
   }, [deviceId])
 
-  // 获取遥测数据并定时刷新
+  // 获取遥测数据并管理混合模式同步
   useEffect(() => {
     if (!deviceId) return
 
-    const refreshData = () => {
-      fetchTelemetry(deviceId)
-      fetchStatus(deviceId)
-      setRefreshCountdown(30)
-    }
+    // 初始获取数据
+    fetchTelemetry(deviceId)
+    fetchStatus(deviceId)
 
-    // 获取初始数据
-    refreshData()
+    // 订阅 Realtime 更新
+    subscribeToDevice(deviceId)
 
-    // 倒计时器
+    // 倒计时器 - 始终在归零时刷新（Realtime 作为补充，轮询作为保障）
     const countdownInterval = setInterval(() => {
       setRefreshCountdown((prev) => {
         if (prev <= 1) {
-          refreshData()
+          // 始终刷新数据，Realtime 可能有但不可靠
+          fetchTelemetry(deviceId)
+          fetchStatus(deviceId)
           return 30
         }
         return prev - 1
@@ -132,8 +136,9 @@ const DeviceDetail: React.FC = () => {
     // 清理函数
     return () => {
       clearInterval(countdownInterval)
+      unsubscribeFromDevice(deviceId)
     }
-  }, [deviceId, fetchTelemetry, fetchStatus])
+  }, [deviceId])
 
   const device = devices.find((d) => d.device_id === deviceId)
   const deviceAlerts = activeAlerts.filter((a) => a.device_id === deviceId)
@@ -307,8 +312,23 @@ const DeviceDetail: React.FC = () => {
             </div>
           </div>
 
-          {/* 倒计时 */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          {/* 倒计时和同步模式指示器 */}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {/* 同步模式指示器 */}
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-[var(--color-bg-page)]" title={syncMode === 'realtime' ? 'Realtime 实时同步' : syncMode === 'fallback' ? '降级轮询模式' : '轮询模式'}>
+              <div
+                className={`w-2 h-2 rounded-full ${
+                  syncMode === 'realtime' ? 'bg-[var(--color-success)]' :
+                  syncMode === 'fallback' ? 'bg-[var(--color-warning)]' :
+                  'bg-[var(--color-info)]'
+                }`}
+              />
+              <span className="text-[10px] font-medium text-[var(--color-text-secondary)]">
+                {syncMode === 'realtime' ? 'RT' : syncMode === 'fallback' ? 'FB' : 'PL'}
+              </span>
+            </div>
+
+            {/* 倒计时 */}
             <Progress
               type="circle"
               percent={(refreshCountdown / 30) * 100}

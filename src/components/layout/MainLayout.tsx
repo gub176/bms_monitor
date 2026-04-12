@@ -52,7 +52,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       key: '/dashboard',
       icon: <DashboardOutlined aria-hidden="true" />,
       label: '仪表盘',
-      ariaLabel: '导航到仪表盘页面',
     },
     {
       key: '/alerts',
@@ -65,13 +64,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           )}
         </div>
       ),
-      ariaLabel: `导航到告警中心页面${activeAlerts.length > 0 ? `，${activeAlerts.length} 条活动告警` : ''}`,
     },
     {
       key: '/devices',
       icon: <WifiOutlined aria-hidden="true" />,
       label: '设备列表',
-      ariaLabel: '导航到设备列表页面',
       disabled: true, // 预留功能
     },
     {
@@ -86,14 +83,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       key: '/bind',
       icon: <LinkOutlined aria-hidden="true" />,
       label: '设备绑定',
-      ariaLabel: '导航到设备绑定页面',
       disabled: true, // 预留功能
     },
     {
       key: '/settings',
       icon: <SettingOutlined aria-hidden="true" />,
       label: '系统设置',
-      ariaLabel: '导航到系统设置页面',
       disabled: true, // 预留功能
     },
   ]

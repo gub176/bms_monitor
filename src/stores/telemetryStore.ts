@@ -2,6 +2,8 @@ import { create } from 'zustand'
 import { supabase } from '../lib/supabaseClient'
 import type { Telemetry, Status } from '../types/database'
 
+export type SyncMode = 'realtime' | 'polling' | 'fallback'
+
 export interface TelemetryState {
   // 数据状态 - 支持多设备
   latestTelemetry: Record<string, Telemetry> // key: deviceId
@@ -11,6 +13,10 @@ export interface TelemetryState {
   // UI 状态
   loading: boolean
   error: string | null
+
+  // Realtime 状态
+  realtimeConnected: boolean
+  syncMode: SyncMode
 
   // Actions - 数据更新
   updateTelemetry: (deviceId: string, data: Telemetry) => void
@@ -23,10 +29,20 @@ export interface TelemetryState {
   fetchTelemetry: (deviceId: string) => Promise<void>
   fetchStatus: (deviceId: string) => Promise<void>
 
+  // Actions - Realtime 管理
+  subscribeToDevice: (deviceId: string) => void
+  unsubscribeFromDevice: (deviceId: string) => void
+  setSyncMode: (mode: SyncMode) => void
+
   // Actions - UI 状态
   setLoading: (loading: boolean) => void
   setError: (error: string | null) => void
 }
+
+// 存储 Realtime 频道引用
+const realtimeChannels: Record<string, any> = {}
+let pollingInterval: NodeJS.Timeout | null = null
+const POLL_INTERVAL = 30000 // 30 秒
 
 export const useTelemetryStore = create<TelemetryState>((set, get) => ({
   // 初始状态
@@ -35,6 +51,8 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
   telemetryHistory: {},
   loading: false,
   error: null,
+  realtimeConnected: false,
+  syncMode: 'realtime' as SyncMode, // 默认尝试 Realtime
 
   // 设置加载状态
   setLoading: (loading) => {
@@ -95,13 +113,97 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
 
   // 清除所有数据
   clearAllData: () => {
+    // 取消所有 Realtime 订阅
+    Object.keys(realtimeChannels).forEach((deviceId) => {
+      realtimeChannels[deviceId].unsubscribe()
+      delete realtimeChannels[deviceId]
+    })
+
+    // 停止轮询
+    if (pollingInterval) {
+      clearInterval(pollingInterval)
+      pollingInterval = null
+    }
+
     set({
       latestTelemetry: {},
       latestStatus: {},
       telemetryHistory: {},
       loading: false,
       error: null,
+      realtimeConnected: false,
+      syncMode: 'realtime',
     })
+  },
+
+  // 设置同步模式
+  setSyncMode: (mode) => {
+    set({ syncMode: mode })
+    console.log(`[SyncMode] Switched to ${mode}`)
+  },
+
+  // 订阅设备 Realtime 更新
+  subscribeToDevice: (deviceId) => {
+    if (realtimeChannels[deviceId]) {
+      return // 已订阅
+    }
+
+    const channel = supabase.channel(`device:${deviceId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'telemetry',
+          filter: `device_id=eq.${deviceId}`,
+        },
+        (payload) => {
+          console.log('[Realtime] Telemetry update:', payload.new)
+          get().updateTelemetry(deviceId, payload.new as Telemetry)
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'status',
+          filter: `device_id=eq.${deviceId}`,
+        },
+        (payload) => {
+          console.log('[Realtime] Status update:', payload.new)
+          get().updateStatus(deviceId, payload.new as Status)
+        }
+      )
+      .subscribe((status) => {
+        console.log('[Realtime] Subscription status:', status)
+        if (status === 'SUBSCRIBED') {
+          set({ realtimeConnected: true, syncMode: 'realtime' })
+          // 停止轮询
+          if (pollingInterval) {
+            clearInterval(pollingInterval)
+            pollingInterval = null
+          }
+        } else if (status === 'TIMED_OUT' || status === 'CHANNEL_ERROR') {
+          // 降级到轮询模式
+          console.warn('[Realtime] Connection failed, falling back to polling')
+          set({ realtimeConnected: false, syncMode: 'fallback' })
+          realtimeChannels[deviceId]?.unsubscribe()
+          delete realtimeChannels[deviceId]
+          // 启动轮询
+          startPolling(deviceId)
+        }
+      })
+
+    realtimeChannels[deviceId] = channel
+  },
+
+  // 取消订阅设备
+  unsubscribeFromDevice: (deviceId) => {
+    if (realtimeChannels[deviceId]) {
+      realtimeChannels[deviceId].unsubscribe()
+      delete realtimeChannels[deviceId]
+    }
   },
 
   // 获取最新遥测数据
@@ -109,7 +211,6 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
     set({ loading: true })
 
     try {
-      // 查询所有字段，包括 data JSON
       const { data, error } = await supabase
         .from('telemetry')
         .select('*')
@@ -124,13 +225,11 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
       }
 
       if (data && data.length > 0) {
-        // 更新状态
         get().updateTelemetry(deviceId, data[0] as Telemetry)
       }
 
       set({ loading: false })
     } catch (err) {
-      // 静默处理错误，不影响页面显示
       console.warn('Telemetry fetch failed:', err instanceof Error ? err.message : err)
       set({ loading: false })
     }
@@ -168,6 +267,40 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
     }
   },
 }))
+
+// ============================================
+// 轮询辅助函数
+// ============================================
+
+// 启动轮询模式
+const startPolling = (deviceId: string) => {
+  if (pollingInterval) {
+    clearInterval(pollingInterval)
+  }
+
+  // 立即执行一次
+  useTelemetryStore.getState().fetchTelemetry(deviceId)
+  useTelemetryStore.getState().fetchStatus(deviceId)
+
+  pollingInterval = setInterval(() => {
+    useTelemetryStore.getState().fetchTelemetry(deviceId)
+    useTelemetryStore.getState().fetchStatus(deviceId)
+  }, POLL_INTERVAL)
+
+  console.log('[Polling] Started with interval:', POLL_INTERVAL)
+}
+
+// 停止轮询
+const stopPolling = () => {
+  if (pollingInterval) {
+    clearInterval(pollingInterval)
+    pollingInterval = null
+    console.log('[Polling] Stopped')
+  }
+}
+
+// 导出用于外部调用
+export { startPolling, stopPolling }
 
 // ============================================
 // 辅助选择器函数
