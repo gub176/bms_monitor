@@ -136,7 +136,8 @@ const DeviceDetail: React.FC = () => {
     // 清理函数
     return () => {
       clearInterval(countdownInterval)
-      unsubscribeFromDevice(deviceId)
+      // 切换到下一个设备时才取消订阅，避免频繁重建连接
+      // unsubscribeFromDevice(deviceId)
     }
   }, [deviceId])
 

@@ -39,9 +39,9 @@ export interface TelemetryState {
   setError: (error: string | null) => void
 }
 
-// 存储 Realtime 频道引用
-const realtimeChannels: Record<string, any> = {}
-let pollingInterval: NodeJS.Timeout | null = null
+// 存储 Realtime 频道引用 - 每设备独立管理
+const realtimeChannels: Map<string, any> = new Map()
+const pollingTimers: Map<string, NodeJS.Timeout> = new Map()
 const POLL_INTERVAL = 30000 // 30 秒
 
 export const useTelemetryStore = create<TelemetryState>((set, get) => ({
@@ -114,16 +114,16 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
   // 清除所有数据
   clearAllData: () => {
     // 取消所有 Realtime 订阅
-    Object.keys(realtimeChannels).forEach((deviceId) => {
-      realtimeChannels[deviceId].unsubscribe()
-      delete realtimeChannels[deviceId]
+    realtimeChannels.forEach((channel) => {
+      channel.unsubscribe()
     })
+    realtimeChannels.clear()
 
-    // 停止轮询
-    if (pollingInterval) {
-      clearInterval(pollingInterval)
-      pollingInterval = null
-    }
+    // 停止所有设备的轮询
+    pollingTimers.forEach((timer) => {
+      clearInterval(timer)
+    })
+    pollingTimers.clear()
 
     set({
       latestTelemetry: {},
@@ -144,7 +144,7 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
 
   // 订阅设备 Realtime 更新
   subscribeToDevice: (deviceId) => {
-    if (realtimeChannels[deviceId]) {
+    if (realtimeChannels.has(deviceId)) {
       return // 已订阅
     }
 
@@ -179,30 +179,29 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
         console.log('[Realtime] Subscription status:', status)
         if (status === 'SUBSCRIBED') {
           set({ realtimeConnected: true, syncMode: 'realtime' })
-          // 停止轮询
-          if (pollingInterval) {
-            clearInterval(pollingInterval)
-            pollingInterval = null
-          }
+          // 停止该设备的轮询
+          stopPolling(deviceId)
         } else if (status === 'TIMED_OUT' || status === 'CHANNEL_ERROR') {
           // 降级到轮询模式
           console.warn('[Realtime] Connection failed, falling back to polling')
           set({ realtimeConnected: false, syncMode: 'fallback' })
-          realtimeChannels[deviceId]?.unsubscribe()
-          delete realtimeChannels[deviceId]
-          // 启动轮询
+          if (realtimeChannels.has(deviceId)) {
+            realtimeChannels.get(deviceId).unsubscribe()
+            realtimeChannels.delete(deviceId)
+          }
+          // 启动该设备的轮询
           startPolling(deviceId)
         }
       })
 
-    realtimeChannels[deviceId] = channel
+    realtimeChannels.set(deviceId, channel)
   },
 
   // 取消订阅设备
   unsubscribeFromDevice: (deviceId) => {
-    if (realtimeChannels[deviceId]) {
-      realtimeChannels[deviceId].unsubscribe()
-      delete realtimeChannels[deviceId]
+    if (realtimeChannels.has(deviceId)) {
+      realtimeChannels.get(deviceId).unsubscribe()
+      realtimeChannels.delete(deviceId)
     }
   },
 
@@ -269,33 +268,33 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
 }))
 
 // ============================================
-// 轮询辅助函数
+// 轮询辅助函数 - 每设备独立管理
 // ============================================
 
-// 启动轮询模式
+// 启动指定设备的轮询模式
 const startPolling = (deviceId: string) => {
-  if (pollingInterval) {
-    clearInterval(pollingInterval)
-  }
+  // 先停止该设备已有的轮询
+  stopPolling(deviceId)
 
   // 立即执行一次
   useTelemetryStore.getState().fetchTelemetry(deviceId)
   useTelemetryStore.getState().fetchStatus(deviceId)
 
-  pollingInterval = setInterval(() => {
+  const timer = setInterval(() => {
     useTelemetryStore.getState().fetchTelemetry(deviceId)
     useTelemetryStore.getState().fetchStatus(deviceId)
   }, POLL_INTERVAL)
 
-  console.log('[Polling] Started with interval:', POLL_INTERVAL)
+  pollingTimers.set(deviceId, timer)
+  console.log(`[Polling] Started for ${deviceId} with interval:`, POLL_INTERVAL)
 }
 
-// 停止轮询
-const stopPolling = () => {
-  if (pollingInterval) {
-    clearInterval(pollingInterval)
-    pollingInterval = null
-    console.log('[Polling] Stopped')
+// 停止指定设备的轮询
+const stopPolling = (deviceId: string) => {
+  if (pollingTimers.has(deviceId)) {
+    clearInterval(pollingTimers.get(deviceId))
+    pollingTimers.delete(deviceId)
+    console.log(`[Polling] Stopped for ${deviceId}`)
   }
 }
 
